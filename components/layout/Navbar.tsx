@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { Phone, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import Image from 'next/image';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -21,13 +22,23 @@ export default function Navbar() {
 <nav className="fixed top-0 left-0 right-0 z-50 bg-black/20 backdrop-blur-md border-b border-amber-900/20">      
 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          {/* Logo */}
-          <Link href="/" className="flex-shrink-0">
-            <div className="text-xl md:text-2xl font-bold">
+         {/* Logo */}
+          <Link href="/" className="flex-shrink-0 flex items-center gap-3">
+            <div className="relative w-12 h-12 md:w-14 md:h-14">
+              <Image
+                src="/logo.png"
+                alt="Hotel Hippo Buck Logo"
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+             <div className="text-lg md:text-xl font-bold">
               <span className="text-white">HOTEL </span>
               <span className="text-amber-500">HIPPO BUCK</span>
             </div>
           </Link>
+
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">
@@ -71,8 +82,8 @@ export default function Navbar() {
 
       {/* Mobile Navigation */}
       {isOpen && (
-        <div className="lg:hidden bg-black/95 border-t border-amber-900/20">
-          <div className="px-4 pt-4 pb-6 space-y-4">
+<div className="lg:hidden bg-black/15 backdrop-blur-md border-t border-amber-900/20">          
+<div className="px-4 pt-4 pb-6 space-y-4">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
