@@ -128,12 +128,12 @@ export default function RoomDetails({ room }: RoomDetailsProps) {
 
       {/* Book Button */}
       <Button
-        asChild
-        size="lg"
-        className="w-full bg-amber-600 hover:bg-amber-700 text-white text-sm md:text-base"
-      >
-        <Link href={`/booking?room=${room.id}`}>BOOK THIS ROOM</Link>
-      </Button>
+  asChild
+  size="lg"
+  className="w-full bg-amber-600 hover:bg-amber-700 text-white text-sm md:text-base"
+>
+  <Link href={`/booking?room=${room.id}`}>BOOK THIS ROOM</Link>
+</Button>
     </div>
   );
 }
