@@ -119,7 +119,7 @@ export default function RoomDetails({ room }: RoomDetailsProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3">
           {room.amenities.map((amenity, index) => (
             <div key={index} className="flex items-center gap-2 text-gray-300">
-              <Check className="w-3 h-3 md:w-4 md:h-4 text-amber-500 flex-shrink-0" />
+              <Check className="w-3 h-3 md:w-4 md:h-4 text-amber-500 shrink-0" />
               <span className="text-xs md:text-sm">{amenity}</span>
             </div>
           ))}

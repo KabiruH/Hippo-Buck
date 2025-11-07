@@ -112,17 +112,17 @@ export default function Footer() {
             <h3 className="text-white font-bold mb-4">Contact Us</h3>
             <ul className="space-y-3">
               <li className="flex items-start space-x-3 text-gray-400 text-sm">
-                <MapPin className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                <MapPin className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
                 <span>Homa Bay Town, Lake Victoria, Homa Bay County, Kenya</span>
               </li>
               <li className="flex items-center space-x-3 text-gray-400 text-sm">
-                <Phone className="w-5 h-5 text-amber-500 flex-shrink-0" />
+                <Phone className="w-5 h-5 text-amber-500 shrink-0" />
                 <a href="tel:+254700000000" className="hover:text-amber-500">
                   +254 700 000 000
                 </a>
               </li>
               <li className="flex items-center space-x-3 text-gray-400 text-sm">
-                <Mail className="w-5 h-5 text-amber-500 flex-shrink-0" />
+                <Mail className="w-5 h-5 text-amber-500 shrink-0" />
                 <a
                   href="mailto:info@hotelhippobuck.com"
                   className="hover:text-amber-500"

@@ -58,7 +58,7 @@ export default function ImageLightbox({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center">
+    <div className="fixed inset-0 z-100 bg-black/95 flex items-center justify-center">
       {/* Close Button */}
       <Button
         onClick={onClose}
@@ -114,12 +114,12 @@ export default function ImageLightbox({
       </div>
 
       {/* Thumbnail Navigation - Desktop Only */}
-      <div className="hidden md:flex absolute bottom-16 left-1/2 -translate-x-1/2 z-10 gap-2 max-w-screen-lg overflow-x-auto px-4">
+      <div className="hidden md:flex absolute bottom-16 left-1/2 -translate-x-1/2 z-10 gap-2 max-w-5xl overflow-x-auto px-4">
         {images.map((image, index) => (
           <button
             key={index}
             onClick={() => setCurrentIndex(index)}
-            className={`relative flex-shrink-0 w-16 h-16 lg:w-20 lg:h-20 rounded overflow-hidden transition-all ${
+            className={`relative shrink-0 w-16 h-16 lg:w-20 lg:h-20 rounded overflow-hidden transition-all ${
               index === currentIndex
                 ? 'ring-2 ring-amber-500 opacity-100'
                 : 'opacity-60 hover:opacity-100'
