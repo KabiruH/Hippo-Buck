@@ -7,18 +7,17 @@ import { BookingStatus, RoomStatus } from '@/lib/constant';
 // Check-in a booking
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+context: { params: Promise<{ id: string }> }) {
   try {
     const { user, error } = await authenticateUser(request);
-
+    const { id } = await context.params; // 👈 await the Promise
     if (error) {
       return error;
     }
 
     // Get booking
     const booking = await prisma.booking.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         rooms: true,
       },
@@ -56,7 +55,7 @@ export async function POST(
 
     // Update booking status
     const updatedBooking = await prisma.booking.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         status: BookingStatus.CHECKED_IN,
         actualCheckIn: new Date(),

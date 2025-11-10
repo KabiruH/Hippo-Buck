@@ -7,21 +7,22 @@ import { formatCurrency } from '@/lib/booking-utils';
 // Get customer profile by email
 export async function GET(
   request: NextRequest,
-  { params }: { params: { email: string } }
+  context: { params: Promise<{ email: string }> }
 ) {
   try {
     const { user, error } = await authenticateUser(request);
+    const { email } = await context.params;
 
     if (error) {
       return error;
     }
 
-    const email = decodeURIComponent(params.email).toLowerCase();
+    const decodedEmail  = decodeURIComponent(email).toLowerCase();
 
     // Get all bookings for this customer
     const bookings = await prisma.booking.findMany({
       where: {
-        guestEmail: email,
+        guestEmail: decodedEmail,
       },
       include: {
         rooms: {

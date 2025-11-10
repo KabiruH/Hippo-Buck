@@ -7,17 +7,18 @@ import { BookingStatus } from '@/lib/constant';
 // Get single booking by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const { user, error } = await authenticateUser(request);
+    const { id } = await context.params;
 
     if (error) {
       return error;
     }
 
     const booking = await prisma.booking.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         rooms: {
           include: {
@@ -74,9 +75,10 @@ export async function GET(
 // Update booking
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+  context: { params: Promise<{ id: string }> } 
+  ) {
   try {
+    const { id } = await context.params;
     const { user, error } = await authenticateUser(request);
 
     if (error) {
@@ -100,7 +102,7 @@ export async function PATCH(
 
     // Check if booking exists
     const existingBooking = await prisma.booking.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existingBooking) {
@@ -131,7 +133,7 @@ export async function PATCH(
 
     // Update booking
     const updatedBooking = await prisma.booking.update({
-      where: { id: params.id },
+      where: { id },
       data: updateData,
       include: {
         rooms: {
@@ -180,18 +182,18 @@ export async function PATCH(
 // Cancel booking
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> } 
 ) {
   try {
     const { user, error } = await authenticateUser(request);
-
+const { id } = await context.params;
     if (error) {
       return error;
     }
 
     // Check if booking exists
     const booking = await prisma.booking.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         rooms: true,
       },
@@ -217,7 +219,7 @@ export async function DELETE(
 
     // Update booking status to CANCELLED
     const cancelledBooking = await prisma.booking.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         status: BookingStatus.CANCELLED,
         cancelledAt: new Date(),

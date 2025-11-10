@@ -1,7 +1,7 @@
 // app/api/auth/signup/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { hashPassword, generateToken } from '@/lib/auth';
+import { hashPassword } from '@/lib/auth';
 import { UserRole, isValidUserRole } from '@/lib/constant';
 
 export async function POST(request: NextRequest) {
@@ -43,6 +43,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 🔒 PREVENT ADMIN ROLE CREATION
+    if (userRole === UserRole.ADMIN) {
+      return NextResponse.json(
+        { error: 'Admin accounts cannot be created through signup. Please contact an administrator.' },
+        { status: 403 }
+      );
+    }
+
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
       where: { email: email.toLowerCase() },
@@ -58,7 +66,7 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await hashPassword(password);
 
-    // Create user
+    // Create user with PENDING approval status
     const user = await prisma.user.create({
       data: {
         email: email.toLowerCase(),
@@ -67,7 +75,7 @@ export async function POST(request: NextRequest) {
         lastName,
         phone: phone || null,
         role: userRole,
-        isActive: true,
+        isActive: false, // 🔒 USER NEEDS APPROVAL
       },
       select: {
         id: true,
@@ -81,32 +89,35 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Generate JWT token
-    const token = generateToken({
-      userId: user.id,
-      email: user.email,
-      role: user.role,
-    });
-
     // Log activity
     await prisma.activityLog.create({
       data: {
         userId: user.id,
-        action: 'USER_CREATED',
+        action: 'USER_REGISTERED',
         entityType: 'User',
         entityId: user.id,
         details: JSON.stringify({
           email: user.email,
           role: user.role,
+          status: 'PENDING_APPROVAL',
         }),
       },
     });
 
+    // 🔒 NO TOKEN GENERATED - User needs approval first
+    // Return success message without token
     return NextResponse.json(
       {
-        message: 'User created successfully',
-        user,
-        token,
+        message: 'Account created successfully! Your account is pending approval from an administrator. You will be notified once approved.',
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role,
+          isActive: user.isActive,
+        },
+        requiresApproval: true, // Flag for frontend
       },
       { status: 201 }
     );
