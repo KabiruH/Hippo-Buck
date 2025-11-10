@@ -38,7 +38,6 @@ export async function POST(request: NextRequest) {
 
     // Verify password
     const isPasswordValid = await comparePasswords(password, user.password);
-
     if (!isPasswordValid) {
       return NextResponse.json(
         { error: 'Invalid email or password' },
@@ -76,14 +75,26 @@ export async function POST(request: NextRequest) {
     // Return user data (without password)
     const { password: _, ...userWithoutPassword } = user;
 
-    return NextResponse.json(
+    // Create response with token in cookie
+    const response = NextResponse.json(
       {
         message: 'Login successful',
         user: userWithoutPassword,
-        token,
+        token, // Still return in body for compatibility
       },
       { status: 200 }
     );
+
+    // Set token as httpOnly cookie (more secure)
+    response.cookies.set('token', token, {
+      httpOnly: true, // Prevents JavaScript access (XSS protection)
+      secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+      sameSite: 'lax', // CSRF protection
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+      path: '/',
+    });
+
+    return response;
   } catch (error) {
     console.error('Login error:', error);
     return NextResponse.json(

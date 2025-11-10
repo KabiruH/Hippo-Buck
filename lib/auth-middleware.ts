@@ -5,12 +5,19 @@ import { UserRole } from './constant';
 
 /**
  * Middleware to verify JWT token and attach user to request
+ * Checks both Authorization header and cookies for token
  */
 export async function authenticateUser(
   request: NextRequest
 ): Promise<{ user: JWTPayload | null; error: NextResponse | null }> {
+  // First, try to get token from Authorization header
   const authHeader = request.headers.get('authorization');
-  const token = extractToken(authHeader);
+  let token = extractToken(authHeader);
+
+  // If no token in Authorization header, check cookies
+  if (!token) {
+    token = request.cookies.get('token')?.value || null;
+  }
 
   if (!token) {
     return {
@@ -50,6 +57,7 @@ export function requireRole(
       { status: 403 }
     );
   }
+
   return null;
 }
 
