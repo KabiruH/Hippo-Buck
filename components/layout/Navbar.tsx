@@ -19,10 +19,10 @@ export default function Navbar() {
   ];
 
   return (
-<nav className="fixed top-0 left-0 right-0 z-50 bg-black/20 backdrop-blur-md border-b border-amber-900/20">      
-<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-black/20 backdrop-blur-md border-b border-amber-900/20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-         {/* Logo */}
+          {/* Logo */}
           <Link href="/" className="shrink-0 flex items-center gap-3">
             <div className="relative w-12 h-12 md:w-14 md:h-14">
               <Image
@@ -33,7 +33,7 @@ export default function Navbar() {
                 priority
               />
             </div>
-             <div className="text-lg md:text-xl font-bold">
+            <div className="text-lg md:text-xl font-bold">
               <span className="text-white">HOTEL </span>
               <span className="text-amber-500">HIPPO BUCK</span>
             </div>
@@ -69,8 +69,8 @@ export default function Navbar() {
             </Button>
           </div>
 
-           <div className="hidden lg:flex items-center space-x-6 ml-3">
-           
+          <div className="hidden lg:flex items-center space-x-6 ml-3">
+
             <Button
               asChild
               className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2"
@@ -91,8 +91,8 @@ export default function Navbar() {
 
       {/* Mobile Navigation */}
       {isOpen && (
-<div className="lg:hidden bg-black/15 backdrop-blur-md border-t border-amber-900/20">          
-<div className="px-4 pt-4 pb-6 space-y-4">
+        <div className="lg:hidden bg-black/15 backdrop-blur-md border-t border-amber-900/20">
+          <div className="px-4 pt-4 pb-6 space-y-4">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
@@ -116,6 +116,14 @@ export default function Navbar() {
                 className="w-full bg-amber-600 hover:bg-amber-700 text-white"
               >
                 <Link href="/booking">RESERVATION</Link>
+              </Button>
+            </div>
+            <div className="pt-4 space-y-4 border-t border-amber-900/20">
+              <Button
+                asChild
+                className="w-full bg-amber-600 hover:bg-amber-700 text-white"
+              >
+                <Link href="/login">Staff Login</Link>
               </Button>
             </div>
           </div>
