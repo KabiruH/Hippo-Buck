@@ -7,7 +7,7 @@ import { BookingStatus, RoomStatus } from '@/lib/constant';
 // Check-in a booking
 export async function POST(
   request: NextRequest,
-context: { params: Promise<{ id: string }> }) {
+  context: { params: Promise<{ id: string }> }) {
   try {
     const { user, error } = await authenticateUser(request);
     const { id } = await context.params; // 👈 await the Promise
@@ -19,16 +19,20 @@ context: { params: Promise<{ id: string }> }) {
     const booking = await prisma.booking.findUnique({
       where: { id },
       include: {
-        rooms: true,
+        rooms: {
+          select: {
+            roomId: true,
+          },
+        },
       },
     });
 
     if (!booking) {
-      return NextResponse.json(
-        { error: 'Booking not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
     }
+
+    const roomIds = booking.rooms.map((r) => r.roomId);
+
 
     // Validate booking can be checked in
     if (booking.status !== BookingStatus.CONFIRMED) {
@@ -75,7 +79,6 @@ context: { params: Promise<{ id: string }> }) {
     });
 
     // Update room status to OCCUPIED
-    const roomIds = booking.rooms.map((r) => r.roomId);
     await prisma.room.updateMany({
       where: { id: { in: roomIds } },
       data: { status: RoomStatus.OCCUPIED },
