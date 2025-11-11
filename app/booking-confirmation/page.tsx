@@ -1,0 +1,489 @@
+'use client';
+
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CheckCircle, Calendar, Users, DoorOpen, CreditCard, Smartphone, Banknote, AlertCircle } from 'lucide-react';
+
+interface BookingData {
+  bookingId: string;
+  bookingNumber: string;
+  room: string;
+  region: string;
+  bedType: string;
+  checkIn: string;
+  checkOut: string;
+  numberOfRooms: number;
+  totalGuests: number;
+  nights: number;
+  pricePerNight: number;
+  totalPrice: number;
+  currency: string;
+  guest: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+  };
+  specialRequests?: string;
+  status: string;
+}
+
+function BookingConfirmationContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const bookingId = searchParams.get('id');
+
+  const [bookingData, setBookingData] = useState<BookingData | null>(null);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('');
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+
+  useEffect(() => {
+    // Load booking data from sessionStorage
+    const storedData = sessionStorage.getItem('bookingConfirmation');
+    if (storedData) {
+      setBookingData(JSON.parse(storedData));
+    } else if (bookingId) {
+      // If no session data, fetch from API
+      fetchBookingDetails(bookingId);
+    } else {
+      // No data available, redirect to booking page
+      router.push('/booking');
+    }
+  }, [bookingId, router]);
+
+  const fetchBookingDetails = async (id: string) => {
+    try {
+      const token = localStorage.getItem('token');
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`/api/bookings/${id}`, {
+        credentials: 'include',
+        headers,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch booking');
+      }
+
+      const data = await response.json();
+      // Transform API data to match BookingData interface
+      // You may need to adjust this based on your actual API response
+      const transformedData: BookingData = {
+        bookingId: data.booking.id,
+        bookingNumber: data.booking.bookingNumber,
+        room: data.booking.rooms[0]?.room.roomType.name || 'N/A',
+        region: 'eastAfrican', // You may need to store this
+        bedType: 'single', // You may need to store this
+        checkIn: data.booking.checkInDate,
+        checkOut: data.booking.checkOutDate,
+        numberOfRooms: data.booking.rooms.length,
+        totalGuests: data.booking.numberOfAdults + data.booking.numberOfChildren,
+        nights: Math.ceil((new Date(data.booking.checkOutDate).getTime() - new Date(data.booking.checkInDate).getTime()) / (1000 * 60 * 60 * 24)),
+        pricePerNight: 0, // Calculate from totalAmount / nights if needed
+        totalPrice: Number(data.booking.totalAmount),
+        currency: 'KES',
+        guest: {
+          firstName: data.booking.guestFirstName,
+          lastName: data.booking.guestLastName,
+          email: data.booking.guestEmail,
+          phone: data.booking.guestPhone,
+        },
+        specialRequests: data.booking.specialRequests,
+        status: data.booking.status,
+      };
+      setBookingData(transformedData);
+    } catch (error) {
+      console.error('Error fetching booking:', error);
+      alert('Failed to load booking details');
+      router.push('/booking');
+    }
+  };
+
+  const handlePayment = async () => {
+    if (!selectedPaymentMethod || !bookingData) {
+      alert('Please select a payment method');
+      return;
+    }
+
+    setIsProcessingPayment(true);
+
+    try {
+      const token = localStorage.getItem('token');
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      if (selectedPaymentMethod === 'MPESA') {
+        // Initiate M-Pesa payment
+        const response = await fetch('/api/payments/mpesa', {
+          method: 'POST',
+          credentials: 'include',
+          headers,
+          body: JSON.stringify({
+            bookingId: bookingData.bookingId,
+            amount: bookingData.totalPrice,
+            phoneNumber: bookingData.guest.phone,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Payment failed');
+        }
+
+        alert(data.message + '\n' + data.instructions);
+        // Redirect to booking status page or refresh
+        router.push(`/booking-status?id=${bookingData.bookingId}`);
+      } else {
+        // For Cash and Card, create payment record
+        const response = await fetch('/api/payments', {
+          method: 'POST',
+          credentials: 'include',
+          headers,
+          body: JSON.stringify({
+            bookingId: bookingData.bookingId,
+            amount: bookingData.totalPrice,
+            paymentMethod: selectedPaymentMethod,
+            notes: `Payment via ${selectedPaymentMethod}`,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Payment failed');
+        }
+
+        alert('Payment recorded successfully! Your booking is now CONFIRMED.');
+        router.push(`/booking-status?id=${bookingData.bookingId}`);
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      alert(error instanceof Error ? error.message : 'Payment failed. Please try again.');
+    } finally {
+      setIsProcessingPayment(false);
+    }
+  };
+
+  if (!bookingData) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto mb-4"></div>
+          <p className="text-white">Loading booking details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const currencySymbol = bookingData.currency === 'KES' ? 'KES ' : '$';
+  const isPending = bookingData.status === 'PENDING';
+
+  return (
+    <main className="min-h-screen bg-black py-12 px-4">
+      <div className="max-w-4xl mx-auto">
+        {/* Success Banner */}
+        <div className="bg-linear-to-r from-green-900/30 to-green-800/30 border border-green-700 rounded-lg p-6 mb-8">
+          <div className="flex items-start gap-4">
+            <div className="bg-green-600 rounded-full p-2 shrink-0">
+              <CheckCircle className="w-8 h-8 text-white" />
+            </div>
+            <div className="flex-1">
+              <h1 className="text-2xl font-bold text-white mb-2">
+                Booking Created Successfully!
+              </h1>
+              <p className="text-green-200 mb-2">
+                Booking Reference: <span className="font-bold text-amber-400">{bookingData.bookingNumber}</span>
+              </p>
+              <p className="text-green-200 text-sm">
+                A confirmation email has been sent to {bookingData.guest.email}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Status Alert */}
+        {isPending && (
+          <div className="bg-amber-900/30 border border-amber-700 rounded-lg p-4 mb-6 flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-amber-200 font-medium mb-1">Payment Required to Confirm Booking</p>
+              <p className="text-amber-300/80 text-sm">
+                Your booking is currently PENDING. Please complete payment below to confirm your reservation.
+              </p>
+            </div>
+          </div>
+        )}
+
+        <div className="grid md:grid-cols-3 gap-6">
+          {/* Booking Details */}
+          <div className="md:col-span-2 space-y-6">
+            {/* Guest Information */}
+            <Card className="bg-zinc-900 border-zinc-800">
+              <CardHeader>
+                <CardTitle className="text-white">Guest Information</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Name:</span>
+                  <span className="text-white font-medium">
+                    {bookingData.guest.firstName} {bookingData.guest.lastName}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Email:</span>
+                  <span className="text-white">{bookingData.guest.email}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Phone:</span>
+                  <span className="text-white">{bookingData.guest.phone}</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Reservation Details */}
+            <Card className="bg-zinc-900 border-zinc-800">
+              <CardHeader>
+                <CardTitle className="text-white">Reservation Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <DoorOpen className="w-5 h-5 text-amber-500" />
+                  <div className="flex-1">
+                    <p className="text-gray-400 text-sm">Room Type</p>
+                    <p className="text-white font-medium">{bookingData.room}</p>
+                    <p className="text-amber-500 text-sm">
+                      {bookingData.bedType === 'single' ? 'Single' : 'Double'} Bed & Breakfast
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <Calendar className="w-5 h-5 text-amber-500" />
+                  <div className="flex-1">
+                    <p className="text-gray-400 text-sm">Check-in</p>
+                    <p className="text-white font-medium">
+                      {new Date(bookingData.checkIn).toLocaleDateString('en-US', {
+                        weekday: 'short',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <Calendar className="w-5 h-5 text-amber-500" />
+                  <div className="flex-1">
+                    <p className="text-gray-400 text-sm">Check-out</p>
+                    <p className="text-white font-medium">
+                      {new Date(bookingData.checkOut).toLocaleDateString('en-US', {
+                        weekday: 'short',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <Users className="w-5 h-5 text-amber-500" />
+                  <div className="flex-1 flex justify-between">
+                    <div>
+                      <p className="text-gray-400 text-sm">Guests & Rooms</p>
+                      <p className="text-white font-medium">
+                        {bookingData.totalGuests} {bookingData.totalGuests === 1 ? 'Guest' : 'Guests'} · {bookingData.numberOfRooms} {bookingData.numberOfRooms === 1 ? 'Room' : 'Rooms'} · {bookingData.nights} {bookingData.nights === 1 ? 'Night' : 'Nights'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {bookingData.specialRequests && (
+                  <div className="pt-3 border-t border-zinc-800">
+                    <p className="text-gray-400 text-sm mb-1">Special Requests:</p>
+                    <p className="text-white text-sm">{bookingData.specialRequests}</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Payment Options */}
+            {isPending && (
+              <Card className="bg-zinc-900 border-zinc-800">
+                <CardHeader>
+                  <CardTitle className="text-white">Select Payment Method</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {/* M-Pesa */}
+                  <button
+                    onClick={() => setSelectedPaymentMethod('MPESA')}
+                    className={`w-full p-4 rounded-lg border-2 transition-all ${
+                      selectedPaymentMethod === 'MPESA'
+                        ? 'border-amber-500 bg-amber-500/10'
+                        : 'border-zinc-700 hover:border-zinc-600'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Smartphone className="w-6 h-6 text-green-500" />
+                      <div className="text-left flex-1">
+                        <p className="text-white font-medium">M-Pesa</p>
+                        <p className="text-gray-400 text-sm">Pay via mobile money</p>
+                      </div>
+                      {selectedPaymentMethod === 'MPESA' && (
+                        <CheckCircle className="w-5 h-5 text-amber-500" />
+                      )}
+                    </div>
+                  </button>
+
+                  {/* Cash */}
+                  <button
+                    onClick={() => setSelectedPaymentMethod('CASH')}
+                    className={`w-full p-4 rounded-lg border-2 transition-all ${
+                      selectedPaymentMethod === 'CASH'
+                        ? 'border-amber-500 bg-amber-500/10'
+                        : 'border-zinc-700 hover:border-zinc-600'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Banknote className="w-6 h-6 text-blue-500" />
+                      <div className="text-left flex-1">
+                        <p className="text-white font-medium">Cash</p>
+                        <p className="text-gray-400 text-sm">Pay at the hotel</p>
+                      </div>
+                      {selectedPaymentMethod === 'CASH' && (
+                        <CheckCircle className="w-5 h-5 text-amber-500" />
+                      )}
+                    </div>
+                  </button>
+
+                  {/* Card */}
+                  <button
+                    onClick={() => setSelectedPaymentMethod('CARD')}
+                    className={`w-full p-4 rounded-lg border-2 transition-all ${
+                      selectedPaymentMethod === 'CARD'
+                        ? 'border-amber-500 bg-amber-500/10'
+                        : 'border-zinc-700 hover:border-zinc-600'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <CreditCard className="w-6 h-6 text-purple-500" />
+                      <div className="text-left flex-1">
+                        <p className="text-white font-medium">Credit/Debit Card</p>
+                        <p className="text-gray-400 text-sm">Pay with card</p>
+                      </div>
+                      {selectedPaymentMethod === 'CARD' && (
+                        <CheckCircle className="w-5 h-5 text-amber-500" />
+                      )}
+                    </div>
+                  </button>
+
+                  <Button
+                    onClick={handlePayment}
+                    disabled={!selectedPaymentMethod || isProcessingPayment}
+                    className="w-full bg-amber-600 hover:bg-amber-700 text-white mt-4"
+                    size="lg"
+                  >
+                    {isProcessingPayment ? (
+                      <>
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                        Processing...
+                      </>
+                    ) : (
+                      <>Pay {currencySymbol}{bookingData.totalPrice.toLocaleString()}</>
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Price Summary */}
+          <div className="md:col-span-1">
+            <Card className="bg-zinc-900 border-amber-500/30 sticky top-24">
+              <CardHeader>
+                <CardTitle className="text-white">Price Summary</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">
+                    {bookingData.numberOfRooms} × {bookingData.nights} nights
+                  </span>
+                  <span className="text-white">
+                    {currencySymbol}{bookingData.totalPrice.toLocaleString()}
+                  </span>
+                </div>
+                <div className="border-t border-zinc-800 pt-3">
+                  <div className="flex justify-between text-lg font-bold">
+                    <span className="text-white">Total</span>
+                    <span className="text-amber-500">
+                      {currencySymbol}{bookingData.totalPrice.toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-400 pt-2">
+                  *Taxes and breakfast included
+                </p>
+
+                {/* Status Badge */}
+                <div className="pt-3 border-t border-zinc-800">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-400 text-sm">Status:</span>
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        isPending
+                          ? 'bg-yellow-900/30 text-yellow-400'
+                          : 'bg-green-900/30 text-green-400'
+                      }`}
+                    >
+                      {bookingData.status}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Skip Payment Option */}
+        {isPending && (
+          <div className="mt-8 text-center">
+            <p className="text-gray-400 text-sm mb-3">
+              Not ready to pay now? You can pay later at the hotel.
+            </p>
+            <Button
+              onClick={() => router.push('/')}
+              variant="outline"
+              className="border-zinc-700 text-yellow-500 hover:bg-zinc-800"
+            >
+              I'll Pay Later
+            </Button>
+          </div>
+        )}
+      </div>
+    </main>
+  );
+}
+
+export default function BookingConfirmationPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <BookingConfirmationContent />
+    </Suspense>
+  );
+}

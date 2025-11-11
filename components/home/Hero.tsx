@@ -55,6 +55,16 @@ export default function Hero() {
               <Link href="/booking">BOOK YOUR STAY</Link>
             </Button>
           </div>
+
+           <div className="pt-8">
+            <Button
+              asChild
+              size="lg"
+              className="bg-amber-600 hover:bg-amber-700 text-white px-12 py-6 text-lg tracking-wider"
+            >
+              <Link href="/booking-lookup">Confirm Booking</Link>
+            </Button>
+          </div>
         </div>
 
         {/* Scroll Down Indicator */}

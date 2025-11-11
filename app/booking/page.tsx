@@ -33,6 +33,7 @@ function BookingContent() {
   const [nights, setNights] = useState(0);
   const [pricePerNight, setPricePerNight] = useState(0);
   const [totalPrice, setTotalPrice] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Guest Information
   const [firstName, setFirstName] = useState('');
@@ -77,7 +78,7 @@ function BookingContent() {
   const totalGuestsPerRoom = adultsPerRoom + childrenPerRoom;
   const isGuestCapacityValid = totalGuestsPerRoom <= maxGuestsPerRoom;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!isGuestCapacityValid) {
@@ -85,38 +86,160 @@ function BookingContent() {
       return;
     }
 
-    // Prepare booking data
-    const bookingData = {
-      room: selectedRoomData?.name,
-      roomId: selectedRoom,
-      region,
-      bedType,
-      checkIn,
-      checkOut,
-      numberOfRooms,
-      adultsPerRoom,
-      childrenPerRoom,
-      totalGuests,
-      nights,
-      pricePerNight,
-      totalPrice,
-      currency,
-      guest: {
-        firstName,
-        lastName,
-        email,
-        phone,
-      },
-      specialRequests,
-    };
+    setIsSubmitting(true);
 
-    console.log('Booking data:', bookingData);
-    
-    // Store in sessionStorage for payment page
-    sessionStorage.setItem('bookingData', JSON.stringify(bookingData));
-    
-    // Navigate to payment page
-    router.push('/payment');
+    try {
+      // Get token from localStorage (if user is logged in)
+      const token = localStorage.getItem('token');
+      
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      
+      // Add authorization if user is logged in
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      // Step 1: Fetch available rooms from API
+      console.log('Fetching available rooms for:', checkIn, 'to', checkOut);
+      
+      const availableRoomsResponse = await fetch(
+        `/api/rooms/available?checkIn=${checkIn}&checkOut=${checkOut}`,
+        {
+          credentials: 'include',
+          headers,
+        }
+      );
+
+      if (!availableRoomsResponse.ok) {
+        const errorData = await availableRoomsResponse.json();
+        console.error('Available rooms API error:', errorData);
+        throw new Error(errorData.error || 'Failed to check room availability');
+      }
+
+      const availableRoomsData = await availableRoomsResponse.json();
+      
+      console.log('Available rooms response:', availableRoomsData);
+
+      if (!availableRoomsData.availableRooms || availableRoomsData.availableRooms.length === 0) {
+        throw new Error('No rooms available for the selected dates. Please try different dates.');
+      }
+
+      // Step 2: Map frontend room selection to database room type
+      const roomTypeMapping: Record<string, string> = {
+        'standard-room': 'Standard Room',
+        'deluxe-lake-view': 'Superior Room (Pool View)',
+        'superior-lake-view': 'Superior Room (Garden View)',
+        'superior-garden': 'Superior Room (Garden View)',
+      };
+      
+      const databaseRoomTypeName = roomTypeMapping[selectedRoom] || selectedRoomData?.name;
+      
+      console.log('Frontend room ID:', selectedRoom);
+      console.log('Mapped to database room type:', databaseRoomTypeName);
+      
+      // Step 3: Find available rooms matching the selected room type
+      const matchingRooms = availableRoomsData.availableRooms.filter(
+        (room: any) => room.roomType.name === databaseRoomTypeName
+      );
+
+      console.log('Matching available rooms found:', matchingRooms.length);
+      console.log('Matching rooms:', matchingRooms);
+
+      if (matchingRooms.length === 0) {
+        throw new Error(
+          `No "${databaseRoomTypeName}" rooms available for selected dates. Please try different dates or select a different room type.`
+        );
+      }
+
+      if (matchingRooms.length < numberOfRooms) {
+        throw new Error(
+          `Only ${matchingRooms.length} "${databaseRoomTypeName}" room(s) available for selected dates. You requested ${numberOfRooms}.`
+        );
+      }
+
+      // Step 4: Get actual room IDs from database
+      const actualRoomIds = matchingRooms
+        .slice(0, numberOfRooms)
+        .map((room: any) => room.room.id);
+
+      console.log('Using room IDs:', actualRoomIds);
+
+      if (actualRoomIds.some((id: string) => !id || id.length < 10)) {
+        console.error('Invalid room IDs detected:', actualRoomIds);
+        throw new Error('Invalid room IDs. Please contact support.');
+      }
+
+      // Step 5: Create booking with actual room IDs
+      const bookingPayload = {
+        guestFirstName: firstName,
+        guestLastName: lastName,
+        guestEmail: email,
+        guestPhone: phone,
+        checkInDate: checkIn,
+        checkOutDate: checkOut,
+        numberOfAdults: adultsPerRoom * numberOfRooms,
+        numberOfChildren: childrenPerRoom * numberOfRooms,
+        roomIds: actualRoomIds, // ✅ Now using actual database room IDs
+        paidAmount: 0, // Book now, pay later - STATUS WILL BE PENDING
+        specialRequests: specialRequests || null,
+      };
+
+      console.log('Booking payload:', bookingPayload);
+
+      const response = await fetch('/api/bookings', {
+        method: 'POST',
+        credentials: 'include',
+        headers,
+        body: JSON.stringify(bookingPayload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error('API Error:', data);
+        throw new Error(data.error || 'Failed to create booking');
+      }
+
+      console.log('Booking created:', data);
+
+      // Store booking data for confirmation page
+      const bookingConfirmation = {
+        bookingId: data.booking.id,
+        bookingNumber: data.booking.bookingNumber,
+        room: selectedRoomData?.name,
+        region,
+        bedType,
+        checkIn,
+        checkOut,
+        numberOfRooms,
+        totalGuests,
+        nights,
+        pricePerNight,
+        totalPrice,
+        currency,
+        guest: {
+          firstName,
+          lastName,
+          email,
+          phone,
+        },
+        specialRequests,
+        status: data.booking.status,
+      };
+
+      sessionStorage.setItem('bookingConfirmation', JSON.stringify(bookingConfirmation));
+      
+      // Navigate to booking confirmation page with payment options
+      router.push(`/booking-confirmation?id=${data.booking.id}`);
+      
+    } catch (error) {
+      console.error('Booking error:', error);
+      alert(error instanceof Error ? error.message : 'Failed to create booking. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const incrementRooms = () => {
@@ -493,11 +616,23 @@ function BookingContent() {
                       type="submit"
                       size="lg"
                       className="w-full bg-amber-600 hover:bg-amber-700 text-white mt-6"
-                      disabled={!selectedRoom || !checkIn || !checkOut || nights <= 0 || !isGuestCapacityValid}
+                      disabled={!selectedRoom || !checkIn || !checkOut || nights <= 0 || !isGuestCapacityValid || isSubmitting}
                     >
-                      <CreditCard className="w-5 h-5 mr-2" />
-                      PROCEED TO PAYMENT
+                      {isSubmitting ? (
+                        <>
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                          Creating Booking...
+                        </>
+                      ) : (
+                        <>
+                          <CreditCard className="w-5 h-5 mr-2" />
+                          COMPLETE BOOKING
+                        </>
+                      )}
                     </Button>
+                    <p className="text-xs text-gray-400 text-center mt-2">
+                      You can pay later to confirm your booking
+                    </p>
                   </form>
                 </CardContent>
               </Card>
