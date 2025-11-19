@@ -10,15 +10,12 @@ import {
 } from '@/lib/booking-utils';
 import { BookingStatus, PaymentMethod } from '@/lib/constant';
 
-// Create a new booking
+// Create a new booking (PUBLIC ACCESS for customers)
 export async function POST(request: NextRequest) {
   try {
-    // Authenticate user (staff/admin creating booking)
-    const { user, error } = await authenticateUser(request);
-
-    if (error) {
-      return error;
-    }
+    // Try to authenticate, but don't require it (for guest bookings)
+    const { user } = await authenticateUser(request);
+    const isStaffBooking = !!user;
 
     const body = await request.json();
     const {
@@ -37,6 +34,7 @@ export async function POST(request: NextRequest) {
       paymentMethod,
       paidAmount = 0,
       specialRequests,
+      manualConfirm = false, // Staff can manually confirm without payment
     } = body;
 
     // Validation
@@ -124,37 +122,52 @@ export async function POST(request: NextRequest) {
     // Generate unique booking number
     const bookingNumber = generateBookingNumber();
 
-    // Determine booking status based on payment
-    const bookingStatus =
-      paidAmount >= totalAmount
-        ? BookingStatus.CONFIRMED
-        : BookingStatus.PENDING;
+    // Determine booking status
+    let bookingStatus: BookingStatus;
+    
+    if (isStaffBooking && manualConfirm) {
+      // Staff can manually confirm booking regardless of payment
+      bookingStatus = BookingStatus.CONFIRMED;
+    } else if (paidAmount >= totalAmount) {
+      // Full payment received - auto confirm
+      bookingStatus = BookingStatus.CONFIRMED;
+    } else {
+      // No payment or partial payment - keep pending
+      bookingStatus = BookingStatus.PENDING;
+    }
+
+    // Prepare booking data
+    const bookingData: any = {
+      bookingNumber,
+      guestFirstName,
+      guestLastName,
+      guestEmail: guestEmail.toLowerCase(),
+      guestPhone,
+      guestCountry: guestCountry || null,
+      guestIdType: guestIdType || null,
+      guestIdNumber: guestIdNumber || null,
+      checkInDate: checkIn,
+      checkOutDate: checkOut,
+      numberOfAdults,
+      numberOfChildren,
+      totalAmount,
+      paidAmount,
+      status: bookingStatus,
+      paymentMethod: paymentMethod || null,
+      specialRequests: specialRequests || null,
+      rooms: {
+        create: roomBookingData,
+      },
+    };
+
+    // Only add createdById if user is authenticated (staff booking)
+    if (isStaffBooking && user) {
+      bookingData.createdById = user.userId;
+    }
 
     // Create booking with rooms
     const booking = await prisma.booking.create({
-      data: {
-        bookingNumber,
-        guestFirstName,
-        guestLastName,
-        guestEmail: guestEmail.toLowerCase(),
-        guestPhone,
-        guestCountry: guestCountry || null,
-        guestIdType: guestIdType || null,
-        guestIdNumber: guestIdNumber || null,
-        checkInDate: checkIn,
-        checkOutDate: checkOut,
-        numberOfAdults,
-        numberOfChildren,
-        totalAmount,
-        paidAmount,
-        status: bookingStatus,
-        paymentMethod: paymentMethod || null,
-        specialRequests: specialRequests || null,
-        createdById: user!.userId,
-        rooms: {
-          create: roomBookingData,
-        },
-      },
+      data: bookingData,
       include: {
         rooms: {
           include: {
@@ -197,21 +210,24 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Log activity
-    await prisma.activityLog.create({
-      data: {
-        userId: user!.userId,
-        action: 'BOOKING_CREATED',
-        entityType: 'Booking',
-        entityId: booking.id,
-        details: JSON.stringify({
-          bookingNumber: booking.bookingNumber,
-          guestEmail: booking.guestEmail,
-          totalAmount: booking.totalAmount,
-          roomCount: roomIds.length,
-        }),
-      },
-    });
+    // Log activity only if it's a staff booking
+    if (isStaffBooking && user) {
+      await prisma.activityLog.create({
+        data: {
+          userId: user.userId,
+          action: 'BOOKING_CREATED',
+          entityType: 'Booking',
+          entityId: booking.id,
+          details: JSON.stringify({
+            bookingNumber: booking.bookingNumber,
+            guestEmail: booking.guestEmail,
+            totalAmount: booking.totalAmount,
+            roomCount: roomIds.length,
+            status: bookingStatus,
+          }),
+        },
+      });
+    }
 
     return NextResponse.json(
       {
@@ -272,12 +288,7 @@ export async function GET(request: NextRequest) {
       };
     }
 
-    // Add a timeout wrapper
-    const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Database query timeout')), 15000);
-    });
-
-    const queryPromise = prisma.booking.findMany({
+    const bookings = await prisma.booking.findMany({
       where,
       include: {
         rooms: {
@@ -304,8 +315,6 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const bookings = await Promise.race([queryPromise, timeoutPromise]) as any[];
-
     return NextResponse.json(
       {
         bookings,
@@ -315,14 +324,6 @@ export async function GET(request: NextRequest) {
     );
   } catch (error) {
     console.error('Get bookings error:', error);
-    
-    // Try to disconnect and reconnect
-    try {
-      await prisma.$disconnect();
-    } catch (disconnectError) {
-      console.error('Disconnect error:', disconnectError);
-    }
-    
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
