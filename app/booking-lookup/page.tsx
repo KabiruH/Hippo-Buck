@@ -64,14 +64,9 @@ export default function BookingLookupPage() {
     setBooking(null);
 
     try {
-      const token = localStorage.getItem('token');
       const headers: HeadersInit = {
         'Content-Type': 'application/json',
       };
-      
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
 
       let response;
       
@@ -79,7 +74,6 @@ export default function BookingLookupPage() {
         response = await fetch(
           `/api/bookings?bookingNumber=${encodeURIComponent(searchValue.trim())}`,
           {
-            credentials: 'include',
             headers,
           }
         );
@@ -87,7 +81,6 @@ export default function BookingLookupPage() {
         response = await fetch(
           `/api/bookings?email=${encodeURIComponent(searchValue.trim().toLowerCase())}`,
           {
-            credentials: 'include',
             headers,
           }
         );
@@ -96,9 +89,6 @@ export default function BookingLookupPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error('Please log in to view bookings');
-        }
         throw new Error(data.error || 'Failed to find booking');
       }
 

@@ -229,22 +229,26 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Get all bookings
+// Get all bookings (PUBLIC ACCESS for booking lookup by customers)
 export async function GET(request: NextRequest) {
   try {
-    // Authenticate user
-    const { user, error } = await authenticateUser(request);
-
-    if (error) {
-      return error;
-    }
-
     const searchParams = request.nextUrl.searchParams;
     const status = searchParams.get('status');
     const email = searchParams.get('email');
     const bookingNumber = searchParams.get('bookingNumber');
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
+
+    // Check if this is a customer lookup (by email or booking number)
+    const isCustomerLookup = email || bookingNumber;
+
+    // If not a customer lookup, require authentication for staff
+    if (!isCustomerLookup) {
+      const { user, error } = await authenticateUser(request);
+      if (error) {
+        return error;
+      }
+    }
 
     // Build where clause
     const where: any = {};
@@ -254,7 +258,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (email) {
-      where.guestEmail = { contains: email.toLowerCase() };
+      where.guestEmail = email.toLowerCase();
     }
 
     if (bookingNumber) {
@@ -268,7 +272,12 @@ export async function GET(request: NextRequest) {
       };
     }
 
-    const bookings = await prisma.booking.findMany({
+    // Add a timeout wrapper
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Database query timeout')), 15000);
+    });
+
+    const queryPromise = prisma.booking.findMany({
       where,
       include: {
         rooms: {
@@ -295,6 +304,8 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    const bookings = await Promise.race([queryPromise, timeoutPromise]) as any[];
+
     return NextResponse.json(
       {
         bookings,
@@ -304,6 +315,14 @@ export async function GET(request: NextRequest) {
     );
   } catch (error) {
     console.error('Get bookings error:', error);
+    
+    // Try to disconnect and reconnect
+    try {
+      await prisma.$disconnect();
+    } catch (disconnectError) {
+      console.error('Disconnect error:', disconnectError);
+    }
+    
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

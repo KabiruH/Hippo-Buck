@@ -4,19 +4,15 @@ import { prisma } from '@/lib/prisma';
 import { authenticateUser } from '@/lib/auth-middleware';
 import { BookingStatus } from '@/lib/constant';
 
-// Get single booking by ID
+// Get single booking by ID (PUBLIC ACCESS for customers)
 export async function GET(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { user, error } = await authenticateUser(request);
     const { id } = await context.params;
 
-    if (error) {
-      return error;
-    }
-
+    // Allow public access - no authentication required
     const booking = await prisma.booking.findUnique({
       where: { id },
       include: {
@@ -72,7 +68,7 @@ export async function GET(
   }
 }
 
-// Update booking
+// Update booking (REQUIRES AUTHENTICATION)
 export async function PATCH(
   request: NextRequest,
   context: { params: Promise<{ id: string }> } 
@@ -179,7 +175,7 @@ export async function PATCH(
   }
 }
 
-// Cancel booking
+// Cancel booking (REQUIRES AUTHENTICATION)
 export async function DELETE(
   request: NextRequest,
     context: { params: Promise<{ id: string }> } 
