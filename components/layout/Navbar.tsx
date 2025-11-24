@@ -16,7 +16,7 @@ export default function Navbar() {
     { name: 'ROOMS', href: '/rooms' },
     // { name: 'AMENITIES', href: '/amenities' },
     // { name: 'GALLERY', href: '/gallery' },
-    // { name: 'CONTACT', href: '/contact' },
+    { name: 'CONTACT', href: '/contact' },
   ];
 
   return (
