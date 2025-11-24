@@ -211,10 +211,10 @@ export default function ContactPage() {
               {/* Additional Info Card */}
               <Card className="bg-linear-to-br from-amber-500/10 to-amber-600/5 border-amber-500/20">
                 <CardContent className="p-6">
-                  <h3 className="text-xl font-bold text-white mb-4">
+                  <h3 className="text-xl font-bold text-black mb-4">
                     Why Choose Hotel Hippo Buck?
                   </h3>
-                  <ul className="space-y-3 text-gray-300">
+                  <ul className="space-y-3 text-black">
                     <li className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-2 shrink-0" />
                       <span className="text-sm">Prime lakeside location with stunning sunset views</span>
