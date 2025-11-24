@@ -116,7 +116,7 @@ export function AppSidebar() {
           </div>
           {state === 'expanded' && (
             <div className="flex flex-col overflow-hidden">
-              <span className="text-white font-bold text-lg truncate">
+              <span className="text-black font-bold text-lg truncate">
                 Hotel Hippo Buck
               </span>
               <span className="text-xs text-gray-400 truncate">Management System</span>
