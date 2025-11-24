@@ -91,7 +91,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
         if (onSuccess) {
           onSuccess();
         }
-        router.push('/admin/dashboard');
+        router.push('/dashboard');
       }, 1500);
     } catch (error) {
       setAlert({

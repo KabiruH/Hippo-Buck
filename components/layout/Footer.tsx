@@ -1,3 +1,4 @@
+// components/Footer.tsx
 import Link from 'next/link';
 import { Facebook, Instagram, Twitter, Mail, Phone, MapPin } from 'lucide-react';
 
@@ -27,6 +28,7 @@ export default function Footer() {
               >
                 <Facebook className="w-5 h-5" />
               </a>
+              
               <a
                 href="https://instagram.com/hotelhippobuck"
                 target="_blank"
@@ -36,6 +38,7 @@ export default function Footer() {
               >
                 <Instagram className="w-5 h-5" />
               </a>
+              
               <a
                 href="https://twitter.com/hotelhippobuck"
                 target="_blank"

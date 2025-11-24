@@ -5,7 +5,7 @@ import HotelPolicies from '@/components/rooms/Hotel-policies';
 import Image from 'next/image';
 import { roomsData } from '@/lib/rooms-data';
 
-export default function RoomsPage() {
+export default function RoomsPage() { 
   return (
     <main className="min-h-screen bg-black">
 

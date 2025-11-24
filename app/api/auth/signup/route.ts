@@ -3,11 +3,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { hashPassword } from '@/lib/auth';
 import { UserRole, isValidUserRole } from '@/lib/constant';
+import { authenticateUser } from '@/lib/auth-middleware';
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if request is from an admin
+    const { user: adminUser } = await authenticateUser(request);
+    const isAdminCreating = adminUser?.role === UserRole.ADMIN;
+
     const body = await request.json();
-    const { email, password, firstName, lastName, phone, role } = body;
+    const { email, password, firstName, lastName, phone, role, isActive = true } = body;
 
     // Validation
     if (!email || !password || !firstName || !lastName) {
@@ -43,8 +48,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 🔒 PREVENT ADMIN ROLE CREATION
-    if (userRole === UserRole.ADMIN) {
+    // 🔒 PREVENT ADMIN ROLE CREATION unless created by admin
+    if (userRole === UserRole.ADMIN && !isAdminCreating) {
       return NextResponse.json(
         { error: 'Admin accounts cannot be created through signup. Please contact an administrator.' },
         { status: 403 }
@@ -66,7 +71,7 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await hashPassword(password);
 
-    // Create user with PENDING approval status
+    // Create user - Active by default if admin is creating, otherwise needs approval
     const user = await prisma.user.create({
       data: {
         email: email.toLowerCase(),
@@ -75,7 +80,7 @@ export async function POST(request: NextRequest) {
         lastName,
         phone: phone || null,
         role: userRole,
-        isActive: false, // 🔒 USER NEEDS APPROVAL
+        isActive: isAdminCreating ? isActive : false, // Admin can create active users directly
       },
       select: {
         id: true,
@@ -92,20 +97,38 @@ export async function POST(request: NextRequest) {
     // Log activity
     await prisma.activityLog.create({
       data: {
-        userId: user.id,
-        action: 'USER_REGISTERED',
+        userId: adminUser?.userId || user.id,
+        action: isAdminCreating ? 'USER_CREATED_BY_ADMIN' : 'USER_REGISTERED',
         entityType: 'User',
         entityId: user.id,
         details: JSON.stringify({
           email: user.email,
           role: user.role,
-          status: 'PENDING_APPROVAL',
+          status: user.isActive ? 'ACTIVE' : 'PENDING_APPROVAL',
+          createdBy: isAdminCreating ? adminUser?.email : 'self',
         }),
       },
     });
 
-    // 🔒 NO TOKEN GENERATED - User needs approval first
-    // Return success message without token
+    // If admin is creating, return success without approval message
+    if (isAdminCreating) {
+      return NextResponse.json(
+        {
+          message: 'User created successfully!',
+          user: {
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            role: user.role,
+            isActive: user.isActive,
+          },
+        },
+        { status: 201 }
+      );
+    }
+
+    // For self-registration, return approval required message
     return NextResponse.json(
       {
         message: 'Account created successfully! Your account is pending approval from an administrator. You will be notified once approved.',
@@ -117,7 +140,7 @@ export async function POST(request: NextRequest) {
           role: user.role,
           isActive: user.isActive,
         },
-        requiresApproval: true, // Flag for frontend
+        requiresApproval: true,
       },
       { status: 201 }
     );

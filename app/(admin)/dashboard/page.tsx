@@ -420,7 +420,7 @@ export default function AdminDashboardPage() {
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold text-gray-900">Recent Bookings</h2>
               <button
-                onClick={() => router.push('/admin/bookings')}
+                onClick={() => router.push('/bookings')}
                 className="text-sm text-blue-600 hover:text-blue-700"
               >
                 View All →
@@ -493,7 +493,7 @@ export default function AdminDashboardPage() {
             <div className="space-y-4">
               {data.topCustomers.map((customer, index) => (
                 <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 rounded">
-                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0">
+                  <div className="w-8 h-8 bg-linear-to-br from-blue-500 to-purple-600 text-white rounded-full flex items-center justify-center font-bold shrink-0">
                     {index + 1}
                   </div>
                   <div className="flex-1 min-w-0">
