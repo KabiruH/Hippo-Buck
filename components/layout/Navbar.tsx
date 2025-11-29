@@ -20,7 +20,7 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-black/20 backdrop-blur-md border-b border-amber-900/20 mb-6">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-black/20 backdrop-blur-md border-b border-blue-900/20 mb-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
@@ -36,7 +36,7 @@ export default function Navbar() {
             </div>
             <div className="text-lg md:text-xl font-bold">
               <span className="text-white">HOTEL </span>
-              <span className="text-amber-500">HIPPO BUCK</span>
+              <span className="text-blue-400">HIPPO BUCK</span>
             </div>
           </Link>
 
@@ -46,7 +46,7 @@ export default function Navbar() {
               <Link
                 key={link.name}
                 href={link.href}
-                className="text-white hover:text-amber-500 transition-colors duration-300 text-sm font-medium tracking-wider"
+                className="text-white hover:text-blue-400 transition-colors duration-300 text-sm font-medium tracking-wider"
               >
                 {link.name}
               </Link>
@@ -57,19 +57,19 @@ export default function Navbar() {
           <div className="hidden lg:flex items-center space-x-6">
             <a 
               href="tel:+254700000000"
-              className="flex items-center text-white hover:text-amber-500 transition-colors duration-300"
+              className="flex items-center text-white hover:text-blue-400 transition-colors duration-300"
             >
               <Phone className="w-5 h-5 mr-2" />
             </a>
             <Button
               asChild
-              className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
             >
               <Link href="/booking">RESERVATION</Link>
             </Button>
             <Button
               asChild
-              className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
             >
               <Link href="/login">Staff Login</Link>
             </Button>
@@ -77,7 +77,7 @@ export default function Navbar() {
 
           {/* Mobile menu toggle button */}
           <button 
-            className="lg:hidden text-white hover:text-amber-500 transition-colors"
+            className="lg:hidden text-white hover:text-blue-400 transition-colors"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -94,7 +94,7 @@ export default function Navbar() {
               <Link
                 key={link.name}
                 href={link.href}
-                className="block px-3 py-2 text-base font-medium text-white hover:text-amber-500 hover:bg-zinc-800 rounded-md"
+                className="block px-3 py-2 text-base font-medium text-white hover:text-blue-400 hover:bg-zinc-800 rounded-md"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 {link.name}
@@ -104,13 +104,13 @@ export default function Navbar() {
             <div className="pt-4 space-y-3">
               <Button
                 asChild
-                className="w-full bg-amber-600 hover:bg-amber-700 text-white"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
               >
                 <Link href="/booking">RESERVATION</Link>
               </Button>
               <Button
                 asChild
-                className="w-full bg-amber-600 hover:bg-amber-700 text-white"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
               >
                 <Link href="/login">Staff Login</Link>
               </Button>

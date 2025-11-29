@@ -1,5 +1,4 @@
 'use client';
-
 import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronDown } from 'lucide-react';
@@ -34,33 +33,31 @@ export default function Hero() {
         <div className="max-w-4xl mx-auto space-y-6">
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white tracking-wide">
             <span className="text-white">HOTEL </span>
-            <span className="text-amber-500">HIPPO BUCK</span>
+            <span className="text-blue-400">HIPPO BUCK</span>
           </h1>
           <p className="text-xl md:text-2xl text-white/90 font-light tracking-wide max-w-3xl mx-auto leading-relaxed">
             YOUR SERENE LAKESIDE RETREAT IN THE HEART OF HOMA BAY TOWN
           </p>
-          <p className="text-lg md:text-xl text-amber-400 font-medium tracking-wide">
+          <p className="text-lg md:text-xl text-blue-300 font-medium tracking-wide">
             Experience Lake Victoria's Breathtaking Sunsets | Fresh Tilapia Cuisine | Warm Hospitality
           </p>
           <p className="text-white/80 text-base md:text-lg tracking-wider">
             HOMA BAY TOWN, LAKE VICTORIA, KENYA
           </p>
-
           <div className="pt-8">
             <Button
               asChild
               size="lg"
-              className="bg-amber-600 hover:bg-amber-700 text-white px-12 py-6 text-lg tracking-wider"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-12 py-6 text-lg tracking-wider"
             >
               <Link href="/booking">BOOK YOUR STAY</Link>
             </Button>
           </div>
-
            <div className="pt-8">
             <Button
               asChild
               size="lg"
-              className="bg-amber-600 hover:bg-amber-700 text-white px-12 py-6 text-lg tracking-wider"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-12 py-6 text-lg tracking-wider"
             >
               <Link href="/booking-lookup">Confirm Booking</Link>
             </Button>

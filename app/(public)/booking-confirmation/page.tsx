@@ -181,10 +181,10 @@ function BookingConfirmationContent() {
 
   if (!bookingData) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto mb-4"></div>
-          <p className="text-white">Loading booking details...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-900">Loading booking details...</p>
         </div>
       </div>
     );
@@ -194,22 +194,22 @@ function BookingConfirmationContent() {
   const isPending = bookingData.status === 'PENDING';
 
   return (
-    <main className="min-h-screen bg-black py-12 px-4">
+    <main className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Success Banner */}
-        <div className="bg-linear-to-r from-green-900/30 to-green-800/30 border border-green-700 rounded-lg p-6 mb-8">
+        <div className="bg-linear-to-r from-green-50 to-green-100 border border-green-300 rounded-lg p-6 mb-8">
           <div className="flex items-start gap-4">
             <div className="bg-green-600 rounded-full p-2 shrink-0">
               <CheckCircle className="w-8 h-8 text-white" />
             </div>
             <div className="flex-1">
-              <h1 className="text-2xl font-bold text-white mb-2">
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">
                 Booking Created Successfully!
               </h1>
-              <p className="text-green-200 mb-2">
-                Booking Reference: <span className="font-bold text-amber-400">{bookingData.bookingNumber}</span>
+              <p className="text-green-800 mb-2">
+                Booking Reference: <span className="font-bold text-blue-600">{bookingData.bookingNumber}</span>
               </p>
-              <p className="text-green-200 text-sm">
+              <p className="text-green-700 text-sm">
                 A confirmation email has been sent to {bookingData.guest.email}
               </p>
             </div>
@@ -218,11 +218,11 @@ function BookingConfirmationContent() {
 
         {/* Status Alert */}
         {isPending && (
-          <div className="bg-amber-900/30 border border-amber-700 rounded-lg p-4 mb-6 flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+          <div className="bg-amber-50 border border-amber-300 rounded-lg p-4 mb-6 flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
             <div>
-              <p className="text-amber-200 font-medium mb-1">Payment Required to Confirm Booking</p>
-              <p className="text-amber-300/80 text-sm">
+              <p className="text-amber-900 font-medium mb-1">Payment Required to Confirm Booking</p>
+              <p className="text-amber-800 text-sm">
                 Your booking is currently PENDING. Please complete payment below to confirm your reservation.
               </p>
             </div>
@@ -233,50 +233,50 @@ function BookingConfirmationContent() {
           {/* Booking Details */}
           <div className="md:col-span-2 space-y-6">
             {/* Guest Information */}
-            <Card className="bg-zinc-900 border-zinc-800">
+            <Card className="bg-white border-gray-200">
               <CardHeader>
-                <CardTitle className="text-white">Guest Information</CardTitle>
+                <CardTitle className="text-gray-900">Guest Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Name:</span>
-                  <span className="text-white font-medium">
+                  <span className="text-gray-600">Name:</span>
+                  <span className="text-gray-900 font-medium">
                     {bookingData.guest.firstName} {bookingData.guest.lastName}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Email:</span>
-                  <span className="text-white">{bookingData.guest.email}</span>
+                  <span className="text-gray-600">Email:</span>
+                  <span className="text-gray-900">{bookingData.guest.email}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Phone:</span>
-                  <span className="text-white">{bookingData.guest.phone}</span>
+                  <span className="text-gray-600">Phone:</span>
+                  <span className="text-gray-900">{bookingData.guest.phone}</span>
                 </div>
               </CardContent>
             </Card>
 
             {/* Reservation Details */}
-            <Card className="bg-zinc-900 border-zinc-800">
+            <Card className="bg-white border-gray-200">
               <CardHeader>
-                <CardTitle className="text-white">Reservation Details</CardTitle>
+                <CardTitle className="text-gray-900">Reservation Details</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <DoorOpen className="w-5 h-5 text-amber-500" />
+                  <DoorOpen className="w-5 h-5 text-blue-600" />
                   <div className="flex-1">
-                    <p className="text-gray-400 text-sm">Room Type</p>
-                    <p className="text-white font-medium">{bookingData.room}</p>
-                    <p className="text-amber-500 text-sm">
+                    <p className="text-gray-600 text-sm">Room Type</p>
+                    <p className="text-gray-900 font-medium">{bookingData.room}</p>
+                    <p className="text-blue-600 text-sm">
                       {bookingData.bedType === 'single' ? 'Single' : 'Double'} Bed & Breakfast
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <Calendar className="w-5 h-5 text-amber-500" />
+                  <Calendar className="w-5 h-5 text-blue-600" />
                   <div className="flex-1">
-                    <p className="text-gray-400 text-sm">Check-in</p>
-                    <p className="text-white font-medium">
+                    <p className="text-gray-600 text-sm">Check-in</p>
+                    <p className="text-gray-900 font-medium">
                       {new Date(bookingData.checkIn).toLocaleDateString('en-US', {
                         weekday: 'short',
                         year: 'numeric',
@@ -288,10 +288,10 @@ function BookingConfirmationContent() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <Calendar className="w-5 h-5 text-amber-500" />
+                  <Calendar className="w-5 h-5 text-blue-600" />
                   <div className="flex-1">
-                    <p className="text-gray-400 text-sm">Check-out</p>
-                    <p className="text-white font-medium">
+                    <p className="text-gray-600 text-sm">Check-out</p>
+                    <p className="text-gray-900 font-medium">
                       {new Date(bookingData.checkOut).toLocaleDateString('en-US', {
                         weekday: 'short',
                         year: 'numeric',
@@ -303,11 +303,11 @@ function BookingConfirmationContent() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <Users className="w-5 h-5 text-amber-500" />
+                  <Users className="w-5 h-5 text-blue-600" />
                   <div className="flex-1 flex justify-between">
                     <div>
-                      <p className="text-gray-400 text-sm">Guests & Rooms</p>
-                      <p className="text-white font-medium">
+                      <p className="text-gray-600 text-sm">Guests & Rooms</p>
+                      <p className="text-gray-900 font-medium">
                         {bookingData.totalGuests} {bookingData.totalGuests === 1 ? 'Guest' : 'Guests'} · {bookingData.numberOfRooms} {bookingData.numberOfRooms === 1 ? 'Room' : 'Rooms'} · {bookingData.nights} {bookingData.nights === 1 ? 'Night' : 'Nights'}
                       </p>
                     </div>
@@ -315,9 +315,9 @@ function BookingConfirmationContent() {
                 </div>
 
                 {bookingData.specialRequests && (
-                  <div className="pt-3 border-t border-zinc-800">
-                    <p className="text-gray-400 text-sm mb-1">Special Requests:</p>
-                    <p className="text-white text-sm">{bookingData.specialRequests}</p>
+                  <div className="pt-3 border-t border-gray-200">
+                    <p className="text-gray-600 text-sm mb-1">Special Requests:</p>
+                    <p className="text-gray-900 text-sm">{bookingData.specialRequests}</p>
                   </div>
                 )}
               </CardContent>
@@ -325,9 +325,9 @@ function BookingConfirmationContent() {
 
             {/* Payment Options */}
             {isPending && (
-              <Card className="bg-zinc-900 border-zinc-800">
+              <Card className="bg-white border-gray-200">
                 <CardHeader>
-                  <CardTitle className="text-white">Select Payment Method</CardTitle>
+                  <CardTitle className="text-gray-900">Select Payment Method</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {/* M-Pesa */}
@@ -335,18 +335,18 @@ function BookingConfirmationContent() {
                     onClick={() => setSelectedPaymentMethod('MPESA')}
                     className={`w-full p-4 rounded-lg border-2 transition-all ${
                       selectedPaymentMethod === 'MPESA'
-                        ? 'border-amber-500 bg-amber-500/10'
-                        : 'border-zinc-700 hover:border-zinc-600'
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-300 hover:border-gray-400'
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <Smartphone className="w-6 h-6 text-green-500" />
+                      <Smartphone className="w-6 h-6 text-green-600" />
                       <div className="text-left flex-1">
-                        <p className="text-white font-medium">M-Pesa</p>
-                        <p className="text-gray-400 text-sm">Pay via mobile money</p>
+                        <p className="text-gray-900 font-medium">M-Pesa</p>
+                        <p className="text-gray-600 text-sm">Pay via mobile money</p>
                       </div>
                       {selectedPaymentMethod === 'MPESA' && (
-                        <CheckCircle className="w-5 h-5 text-amber-500" />
+                        <CheckCircle className="w-5 h-5 text-blue-600" />
                       )}
                     </div>
                   </button>
@@ -356,18 +356,18 @@ function BookingConfirmationContent() {
                     onClick={() => setSelectedPaymentMethod('CASH')}
                     className={`w-full p-4 rounded-lg border-2 transition-all ${
                       selectedPaymentMethod === 'CASH'
-                        ? 'border-amber-500 bg-amber-500/10'
-                        : 'border-zinc-700 hover:border-zinc-600'
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-300 hover:border-gray-400'
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <Banknote className="w-6 h-6 text-blue-500" />
+                      <Banknote className="w-6 h-6 text-blue-600" />
                       <div className="text-left flex-1">
-                        <p className="text-white font-medium">Cash</p>
-                        <p className="text-gray-400 text-sm">Pay at the hotel</p>
+                        <p className="text-gray-900 font-medium">Cash</p>
+                        <p className="text-gray-600 text-sm">Pay at the hotel</p>
                       </div>
                       {selectedPaymentMethod === 'CASH' && (
-                        <CheckCircle className="w-5 h-5 text-amber-500" />
+                        <CheckCircle className="w-5 h-5 text-blue-600" />
                       )}
                     </div>
                   </button>
@@ -377,18 +377,18 @@ function BookingConfirmationContent() {
                     onClick={() => setSelectedPaymentMethod('CARD')}
                     className={`w-full p-4 rounded-lg border-2 transition-all ${
                       selectedPaymentMethod === 'CARD'
-                        ? 'border-amber-500 bg-amber-500/10'
-                        : 'border-zinc-700 hover:border-zinc-600'
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-300 hover:border-gray-400'
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <CreditCard className="w-6 h-6 text-purple-500" />
+                      <CreditCard className="w-6 h-6 text-purple-600" />
                       <div className="text-left flex-1">
-                        <p className="text-white font-medium">Credit/Debit Card</p>
-                        <p className="text-gray-400 text-sm">Pay with card</p>
+                        <p className="text-gray-900 font-medium">Credit/Debit Card</p>
+                        <p className="text-gray-600 text-sm">Pay with card</p>
                       </div>
                       {selectedPaymentMethod === 'CARD' && (
-                        <CheckCircle className="w-5 h-5 text-amber-500" />
+                        <CheckCircle className="w-5 h-5 text-blue-600" />
                       )}
                     </div>
                   </button>
@@ -396,7 +396,7 @@ function BookingConfirmationContent() {
                   <Button
                     onClick={handlePayment}
                     disabled={!selectedPaymentMethod || isProcessingPayment}
-                    className="w-full bg-amber-600 hover:bg-amber-700 text-white mt-4"
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white mt-4"
                     size="lg"
                   >
                     {isProcessingPayment ? (
@@ -415,40 +415,40 @@ function BookingConfirmationContent() {
 
           {/* Price Summary */}
           <div className="md:col-span-1">
-            <Card className="bg-zinc-900 border-amber-500/30 sticky top-24">
+            <Card className="bg-white border-blue-500/30 sticky top-24 shadow-lg">
               <CardHeader>
-                <CardTitle className="text-white">Price Summary</CardTitle>
+                <CardTitle className="text-gray-900">Price Summary</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-400">
+                  <span className="text-gray-600">
                     {bookingData.numberOfRooms} × {bookingData.nights} nights
                   </span>
-                  <span className="text-white">
+                  <span className="text-gray-900">
                     {currencySymbol}{bookingData.totalPrice.toLocaleString()}
                   </span>
                 </div>
-                <div className="border-t border-zinc-800 pt-3">
+                <div className="border-t border-gray-200 pt-3">
                   <div className="flex justify-between text-lg font-bold">
-                    <span className="text-white">Total</span>
-                    <span className="text-amber-500">
+                    <span className="text-gray-900">Total</span>
+                    <span className="text-blue-600">
                       {currencySymbol}{bookingData.totalPrice.toLocaleString()}
                     </span>
                   </div>
                 </div>
-                <p className="text-xs text-gray-400 pt-2">
+                <p className="text-xs text-gray-600 pt-2">
                   *Taxes and breakfast included
                 </p>
 
                 {/* Status Badge */}
-                <div className="pt-3 border-t border-zinc-800">
+                <div className="pt-3 border-t border-gray-200">
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-400 text-sm">Status:</span>
+                    <span className="text-gray-600 text-sm">Status:</span>
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-medium ${
                         isPending
-                          ? 'bg-yellow-900/30 text-yellow-400'
-                          : 'bg-green-900/30 text-green-400'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : 'bg-green-100 text-green-800'
                       }`}
                     >
                       {bookingData.status}
@@ -463,13 +463,13 @@ function BookingConfirmationContent() {
         {/* Skip Payment Option */}
         {isPending && (
           <div className="mt-8 text-center">
-            <p className="text-gray-400 text-sm mb-3">
+            <p className="text-gray-600 text-sm mb-3">
               Not ready to pay now? You can pay later at the hotel.
             </p>
             <Button
               onClick={() => router.push('/')}
               variant="outline"
-              className="border-zinc-700 text-yellow-500 hover:bg-zinc-800"
+              className="border-gray-300 text-blue-600 hover:bg-gray-100"
             >
               I'll Pay Later
             </Button>

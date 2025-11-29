@@ -9,7 +9,7 @@ export default function LoginPage() {
       <div className="max-w-md w-full">
         {/* Logo & Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-600 rounded-full mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-700 rounded-full mb-4">
             <svg
               className="w-10 h-10 text-white"
               fill="none"
@@ -25,7 +25,7 @@ export default function LoginPage() {
             </svg>
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">
-            Hotel <span className="text-amber-500">Hippo Buck</span>
+            Hotel <span className="text-blue-500">Hippo Buck</span>
           </h1>
           <p className="text-gray-400">
             Welcome back! Please login to your account.
@@ -52,7 +52,7 @@ export default function LoginPage() {
           <div className="mt-6 text-center">
             <Link
               href="/signup"
-              className="text-amber-500 hover:text-amber-400 font-medium transition-colors"
+              className="text-blue-500 hover:text-blue-400 font-medium transition-colors"
             >
               Create a new account →
             </Link>

@@ -138,7 +138,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
             value={formData.email}
             onChange={(e) => handleChange('email', e.target.value)}
             disabled={isLoading}
-            className={`pl-10 bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus-visible:ring-amber-500 ${
+            className={`pl-10 bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus-visible:ring-blue-500 ${
               errors.email ? 'border-red-500' : ''
             }`}
           />
@@ -160,7 +160,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
             value={formData.password}
             onChange={(e) => handleChange('password', e.target.value)}
             disabled={isLoading}
-            className={`pl-10 bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus-visible:ring-amber-500 ${
+            className={`pl-10 bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus-visible:ring-blue-500 ${
               errors.password ? 'border-red-500' : ''
             }`}
           />
@@ -176,7 +176,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
           <input
             id="remember-me"
             type="checkbox"
-            className="h-4 w-4 rounded border-zinc-700 bg-zinc-800 text-amber-600 focus:ring-amber-500 focus:ring-offset-zinc-900"
+            className="h-4 w-4 rounded border-zinc-700 bg-zinc-800 text-blue-600 focus:ring-blue-500 focus:ring-offset-zinc-900"
           />
           <Label
             htmlFor="remember-me"
@@ -188,7 +188,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
 
         <a
           href="#"
-          className="text-sm font-medium text-amber-500 hover:text-amber-400 transition-colors"
+          className="text-sm font-medium text-blue-500 hover:text-blue-400 transition-colors"
         >
           Forgot password?
         </a>
@@ -198,7 +198,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
       <Button
         type="submit"
         disabled={isLoading}
-        className="w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold"
+        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold"
       >
         {isLoading ? 'Signing In...' : 'Sign In'}
       </Button>

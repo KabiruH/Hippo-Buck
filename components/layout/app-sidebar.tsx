@@ -109,17 +109,17 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="border-b border-zinc-800 p-4">
+      <SidebarHeader className="border-b border-gray-200 p-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-amber-600 rounded-lg flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shrink-0">
             <span className="text-white font-bold text-lg">HB</span>
           </div>
           {state === 'expanded' && (
             <div className="flex flex-col overflow-hidden">
-              <span className="text-black font-bold text-lg truncate">
+              <span className="text-gray-900 font-bold text-lg truncate">
                 Hotel Hippo Buck
               </span>
-              <span className="text-xs text-gray-400 truncate">Management System</span>
+              <span className="text-xs text-gray-500 truncate">Management System</span>
             </div>
           )}
         </div>
@@ -128,25 +128,25 @@ export function AppSidebar() {
       <SidebarContent className="p-4">
         {/* User Info */}
         {user && state === 'expanded' && (
-          <div className="mb-6 p-3 bg-zinc-900 rounded-lg border border-zinc-800">
+          <div className="mb-6 p-3 bg-blue-50 rounded-lg border border-blue-200">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-amber-600/20 rounded-full flex items-center justify-center shrink-0">
-                <span className="text-amber-500 font-semibold">
+              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
+                <span className="text-blue-600 font-semibold">
                   {user.firstName[0]}
                   {user.lastName[0]}
                 </span>
               </div>
               <div className="flex-1 overflow-hidden">
-                <p className="text-white font-medium text-sm truncate">
+                <p className="text-gray-900 font-medium text-sm truncate">
                   {user.firstName} {user.lastName}
                 </p>
-                <p className="text-xs text-gray-400 truncate">{user.role}</p>
+                <p className="text-xs text-gray-600 truncate">{user.role}</p>
               </div>
             </div>
           </div>
         )}
 
-        <Separator className="bg-zinc-800 mb-4" />
+        <Separator className="bg-gray-200 mb-4" />
 
         {/* Navigation */}
         <SidebarMenu>
@@ -165,8 +165,8 @@ export function AppSidebar() {
                         className={`
                           ${
                             isActive
-                              ? 'bg-amber-600 text-white hover:bg-amber-700'
-                              : 'text-black hover:text-white hover:bg-zinc-800'
+                              ? 'bg-blue-600 text-white hover:bg-blue-700'
+                              : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
                           }
                         `}
                       >
@@ -177,7 +177,7 @@ export function AppSidebar() {
                       </SidebarMenuButton>
                     </TooltipTrigger>
                     {state === 'collapsed' && (
-                      <TooltipContent side="right" className="bg-zinc-900 border-zinc-700">
+                      <TooltipContent side="right" className="bg-white border-gray-200">
                         <p>{item.title}</p>
                       </TooltipContent>
                     )}
@@ -189,7 +189,7 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-zinc-800 p-4">
+      <SidebarFooter className="border-t border-gray-200 p-4">
         <SidebarMenu>
           <SidebarMenuItem>
             <TooltipProvider delayDuration={0}>
@@ -197,14 +197,14 @@ export function AppSidebar() {
                 <TooltipTrigger asChild>
                   <SidebarMenuButton
                     onClick={handleLogout}
-                    className="text-red-400 hover:text-red-900 hover:bg-red-900/20"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
                   >
                     <LogOut className="w-5 h-5" />
                     {state === 'expanded' && <span>Logout</span>}
                   </SidebarMenuButton>
                 </TooltipTrigger>
                 {state === 'collapsed' && (
-                  <TooltipContent side="right" className="bg-zinc-900 border-zinc-700">
+                  <TooltipContent side="right" className="bg-white border-gray-200">
                     <p>Logout</p>
                   </TooltipContent>
                 )}

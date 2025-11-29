@@ -271,7 +271,7 @@ function BookingContent() {
   };
 
   return (
-    <main className="min-h-screen bg-black">
+    <main className="min-h-screen bg-gray-50">
 
       {/* Hero Section - Compact for Mobile */}
       <section className="relative h-[40vh] md:h-[50vh] w-full overflow-hidden">
@@ -289,7 +289,7 @@ function BookingContent() {
         <div className="relative h-full flex flex-col items-center justify-center text-center px-4">
           <div className="max-w-4xl mx-auto space-y-2 md:space-y-4">
             <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white tracking-wide">
-              Book Your <span className="text-amber-500">Stay</span>
+              Book Your <span className="text-blue-400">Stay</span>
             </h1>
             <p className="text-sm md:text-xl text-white/90">
               Reserve your room at Hotel Hippo Buck
@@ -299,14 +299,14 @@ function BookingContent() {
       </section>
 
       {/* Booking Form Section - Mobile First */}
-      <section className="py-8 md:py-16 bg-zinc-900">
+      <section className="py-8 md:py-16 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
             {/* Booking Form - Takes 2 columns on desktop */}
             <div className="lg:col-span-2">
-              <Card className="bg-black border-zinc-800">
+              <Card className="bg-white border-gray-200">
                 <CardHeader>
-                  <CardTitle className="text-xl md:text-2xl text-white">
+                  <CardTitle className="text-xl md:text-2xl text-gray-900">
                     Reservation Details
                   </CardTitle>
                 </CardHeader>
@@ -314,11 +314,11 @@ function BookingContent() {
                   <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
                     {/* Room Selection */}
                     <div className="space-y-2">
-                      <Label htmlFor="room" className="text-white text-sm md:text-base">
+                      <Label htmlFor="room" className="text-gray-900 text-sm md:text-base">
                         Select Room Type
                       </Label>
                       <Select value={selectedRoom} onValueChange={setSelectedRoom}>
-                        <SelectTrigger className="bg-zinc-900 border-zinc-700 text-white">
+                        <SelectTrigger className="bg-gray-50 border-gray-300 text-gray-900">
                           <SelectValue placeholder="Choose a room" />
                         </SelectTrigger>
                         <SelectContent>
@@ -334,11 +334,11 @@ function BookingContent() {
                     {/* Region and Bed Type - Side by Side */}
                     <div className="grid md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="region" className="text-white text-sm md:text-base">
+                        <Label htmlFor="region" className="text-gray-900 text-sm md:text-base">
                           Guest Region
                         </Label>
                         <Select value={region} onValueChange={setRegion}>
-                          <SelectTrigger className="bg-zinc-900 border-zinc-700 text-white">
+                          <SelectTrigger className="bg-gray-50 border-gray-300 text-gray-900">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -353,11 +353,11 @@ function BookingContent() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="bedType" className="text-white text-sm md:text-base">
+                        <Label htmlFor="bedType" className="text-gray-900 text-sm md:text-base">
                           Bed Type
                         </Label>
                         <Select value={bedType} onValueChange={setBedType}>
-                          <SelectTrigger className="bg-zinc-900 border-zinc-700 text-white">
+                          <SelectTrigger className="bg-gray-50 border-gray-300 text-gray-900">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -370,7 +370,7 @@ function BookingContent() {
 
                     {/* Number of Rooms */}
                     <div className="space-y-2">
-                      <Label className="text-white text-sm md:text-base">
+                      <Label className="text-gray-900 text-sm md:text-base">
                         Number of Rooms
                       </Label>
                       <div className="flex items-center gap-4">
@@ -380,13 +380,13 @@ function BookingContent() {
                           disabled={numberOfRooms <= 1}
                           variant="outline"
                           size="icon"
-                          className="bg-zinc-900 border-zinc-700 text-white hover:bg-zinc-800"
+                          className="bg-gray-50 border-gray-300 text-gray-900 hover:bg-gray-100"
                         >
                           <Minus className="w-4 h-4" />
                         </Button>
                         <div className="flex items-center gap-2 flex-1 justify-center">
-                          <DoorOpen className="w-5 h-5 text-amber-500" />
-                          <span className="text-white text-lg font-semibold">
+                          <DoorOpen className="w-5 h-5 text-blue-600" />
+                          <span className="text-gray-900 text-lg font-semibold">
                             {numberOfRooms} {numberOfRooms === 1 ? 'Room' : 'Rooms'}
                           </span>
                         </div>
@@ -396,7 +396,7 @@ function BookingContent() {
                           disabled={numberOfRooms >= 10}
                           variant="outline"
                           size="icon"
-                          className="bg-zinc-900 border-zinc-700 text-white hover:bg-zinc-800"
+                          className="bg-gray-50 border-gray-300 text-gray-900 hover:bg-gray-100"
                         >
                           <Plus className="w-4 h-4" />
                         </Button>
@@ -404,13 +404,13 @@ function BookingContent() {
                     </div>
 
                     {/* Guest Capacity Per Room */}
-                    <div className="space-y-4 p-4 bg-zinc-900/50 rounded-lg border border-zinc-800">
+                    <div className="space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                       <div className="flex items-center justify-between">
-                        <Label className="text-white text-sm md:text-base">
+                        <Label className="text-gray-900 text-sm md:text-base">
                           Guests Per Room
                         </Label>
                         {selectedRoomData && (
-                          <span className="text-xs text-gray-400">
+                          <span className="text-xs text-gray-600">
                             Max {maxGuestsPerRoom} per room
                           </span>
                         )}
@@ -418,7 +418,7 @@ function BookingContent() {
 
                       {/* Adults */}
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-300 text-sm">Adults (18+)</span>
+                        <span className="text-gray-700 text-sm">Adults (18+)</span>
                         <div className="flex items-center gap-3">
                           <Button
                             type="button"
@@ -426,11 +426,11 @@ function BookingContent() {
                             disabled={adultsPerRoom <= 1}
                             variant="outline"
                             size="icon"
-                            className="bg-zinc-900 border-zinc-700 text-white hover:bg-zinc-800 h-8 w-8"
+                            className="bg-white border-gray-300 text-gray-900 hover:bg-gray-100 h-8 w-8"
                           >
                             <Minus className="w-3 h-3" />
                           </Button>
-                          <span className="text-white w-8 text-center font-semibold">
+                          <span className="text-gray-900 w-8 text-center font-semibold">
                             {adultsPerRoom}
                           </span>
                           <Button
@@ -439,7 +439,7 @@ function BookingContent() {
                             disabled={totalGuestsPerRoom >= maxGuestsPerRoom}
                             variant="outline"
                             size="icon"
-                            className="bg-zinc-900 border-zinc-700 text-white hover:bg-zinc-800 h-8 w-8"
+                            className="bg-white border-gray-300 text-gray-900 hover:bg-gray-100 h-8 w-8"
                           >
                             <Plus className="w-3 h-3" />
                           </Button>
@@ -448,7 +448,7 @@ function BookingContent() {
 
                       {/* Children */}
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-300 text-sm">Children (0-17)</span>
+                        <span className="text-gray-700 text-sm">Children (0-17)</span>
                         <div className="flex items-center gap-3">
                           <Button
                             type="button"
@@ -456,11 +456,11 @@ function BookingContent() {
                             disabled={childrenPerRoom <= 0}
                             variant="outline"
                             size="icon"
-                            className="bg-zinc-900 border-zinc-700 text-white hover:bg-zinc-800 h-8 w-8"
+                            className="bg-white border-gray-300 text-gray-900 hover:bg-gray-100 h-8 w-8"
                           >
                             <Minus className="w-3 h-3" />
                           </Button>
-                          <span className="text-white w-8 text-center font-semibold">
+                          <span className="text-gray-900 w-8 text-center font-semibold">
                             {childrenPerRoom}
                           </span>
                           <Button
@@ -469,7 +469,7 @@ function BookingContent() {
                             disabled={totalGuestsPerRoom >= maxGuestsPerRoom}
                             variant="outline"
                             size="icon"
-                            className="bg-zinc-900 border-zinc-700 text-white hover:bg-zinc-800 h-8 w-8"
+                            className="bg-white border-gray-300 text-gray-900 hover:bg-gray-100 h-8 w-8"
                           >
                             <Plus className="w-3 h-3" />
                           </Button>
@@ -482,10 +482,10 @@ function BookingContent() {
                         </p>
                       )}
 
-                      <div className="pt-2 border-t border-zinc-800">
+                      <div className="pt-2 border-t border-blue-200">
                         <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-400">Total Guests:</span>
-                          <span className="text-amber-500 font-semibold">
+                          <span className="text-gray-600">Total Guests:</span>
+                          <span className="text-blue-600 font-semibold">
                             {totalGuests} {totalGuests === 1 ? 'Guest' : 'Guests'} across {numberOfRooms} {numberOfRooms === 1 ? 'room' : 'rooms'}
                           </span>
                         </div>
@@ -495,36 +495,36 @@ function BookingContent() {
                     {/* Check-in and Check-out */}
                     <div className="grid md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="checkIn" className="text-white text-sm md:text-base">
+                        <Label htmlFor="checkIn" className="text-gray-900 text-sm md:text-base">
                           Check-in Date
                         </Label>
                         <div className="relative">
-                          <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500" />
+                          <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-600" />
                           <Input
                             id="checkIn"
                             type="date"
                             value={checkIn}
                             onChange={(e) => setCheckIn(e.target.value)}
                             min={new Date().toISOString().split('T')[0]}
-                            className="pl-10 bg-zinc-900 border-zinc-700 text-white"
+                            className="pl-10 bg-gray-50 border-gray-300 text-gray-900"
                             required
                           />
                         </div>
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="checkOut" className="text-white text-sm md:text-base">
+                        <Label htmlFor="checkOut" className="text-gray-900 text-sm md:text-base">
                           Check-out Date
                         </Label>
                         <div className="relative">
-                          <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500" />
+                          <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-600" />
                           <Input
                             id="checkOut"
                             type="date"
                             value={checkOut}
                             onChange={(e) => setCheckOut(e.target.value)}
                             min={checkIn || new Date().toISOString().split('T')[0]}
-                            className="pl-10 bg-zinc-900 border-zinc-700 text-white"
+                            className="pl-10 bg-gray-50 border-gray-300 text-gray-900"
                             required
                           />
                         </div>
@@ -532,14 +532,14 @@ function BookingContent() {
                     </div>
 
                     {/* Guest Information */}
-                    <div className="pt-4 border-t border-zinc-800">
-                      <h3 className="text-white font-bold mb-4 text-base md:text-lg">
+                    <div className="pt-4 border-t border-gray-200">
+                      <h3 className="text-gray-900 font-bold mb-4 text-base md:text-lg">
                         Primary Guest Information
                       </h3>
                       <div className="space-y-4">
                         <div className="grid md:grid-cols-2 gap-4">
                           <div className="space-y-2">
-                            <Label htmlFor="firstName" className="text-white text-sm">
+                            <Label htmlFor="firstName" className="text-gray-900 text-sm">
                               First Name
                             </Label>
                             <Input
@@ -547,12 +547,12 @@ function BookingContent() {
                               type="text"
                               value={firstName}
                               onChange={(e) => setFirstName(e.target.value)}
-                              className="bg-zinc-900 border-zinc-700 text-white"
+                              className="bg-gray-50 border-gray-300 text-gray-900"
                               required
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="lastName" className="text-white text-sm">
+                            <Label htmlFor="lastName" className="text-gray-900 text-sm">
                               Last Name
                             </Label>
                             <Input
@@ -560,14 +560,14 @@ function BookingContent() {
                               type="text"
                               value={lastName}
                               onChange={(e) => setLastName(e.target.value)}
-                              className="bg-zinc-900 border-zinc-700 text-white"
+                              className="bg-gray-50 border-gray-300 text-gray-900"
                               required
                             />
                           </div>
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="email" className="text-white text-sm">
+                          <Label htmlFor="email" className="text-gray-900 text-sm">
                             Email Address
                           </Label>
                           <Input
@@ -575,13 +575,13 @@ function BookingContent() {
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="bg-zinc-900 border-zinc-700 text-white"
+                            className="bg-gray-50 border-gray-300 text-gray-900"
                             required
                           />
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="phone" className="text-white text-sm">
+                          <Label htmlFor="phone" className="text-gray-900 text-sm">
                             Phone Number
                           </Label>
                           <Input
@@ -590,13 +590,13 @@ function BookingContent() {
                             value={phone}
                             onChange={(e) => setPhone(e.target.value)}
                             placeholder="+254"
-                            className="bg-zinc-900 border-zinc-700 text-white"
+                            className="bg-gray-50 border-gray-300 text-gray-900"
                             required
                           />
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="requests" className="text-white text-sm">
+                          <Label htmlFor="requests" className="text-gray-900 text-sm">
                             Special Requests (Optional)
                           </Label>
                           <textarea
@@ -605,7 +605,7 @@ function BookingContent() {
                             onChange={(e) => setSpecialRequests(e.target.value)}
                             rows={3}
                             placeholder="Any special requests or requirements..."
-                            className="w-full bg-zinc-900 border-zinc-700 text-white rounded-md px-3 py-2 text-sm"
+                            className="w-full bg-gray-50 border-gray-300 text-gray-900 rounded-md px-3 py-2 text-sm border"
                           />
                         </div>
                       </div>
@@ -615,7 +615,7 @@ function BookingContent() {
                     <Button
                       type="submit"
                       size="lg"
-                      className="w-full bg-amber-600 hover:bg-amber-700 text-white mt-6"
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white mt-6"
                       disabled={!selectedRoom || !checkIn || !checkOut || nights <= 0 || !isGuestCapacityValid || isSubmitting}
                     >
                       {isSubmitting ? (
@@ -630,7 +630,7 @@ function BookingContent() {
                         </>
                       )}
                     </Button>
-                    <p className="text-xs text-gray-400 text-center mt-2">
+                    <p className="text-xs text-gray-600 text-center mt-2">
                       You can pay later to confirm your booking
                     </p>
                   </form>
@@ -640,9 +640,9 @@ function BookingContent() {
 
             {/* Booking Summary - Stacks below form on mobile */}
             <div className="lg:col-span-1">
-              <Card className="bg-black border-amber-500/30 sticky top-24">
+              <Card className="bg-white border-blue-500/30 sticky top-24 shadow-lg">
                 <CardHeader>
-                  <CardTitle className="text-lg md:text-xl text-white">
+                  <CardTitle className="text-lg md:text-xl text-gray-900">
                     Booking Summary
                   </CardTitle>
                 </CardHeader>
@@ -661,41 +661,41 @@ function BookingContent() {
 
                       {/* Room Details */}
                       <div>
-                        <h3 className="text-white font-bold mb-1 text-sm md:text-base">
+                        <h3 className="text-gray-900 font-bold mb-1 text-sm md:text-base">
                           {selectedRoomData.name}
                         </h3>
-                        <p className="text-amber-500 text-xs md:text-sm">
+                        <p className="text-blue-600 text-xs md:text-sm">
                           {bedType === 'single' ? 'Single' : 'Double'} Bed & Breakfast
                         </p>
                       </div>
 
                       {/* Divider */}
-                      <div className="border-t border-zinc-800 pt-4 space-y-3">
+                      <div className="border-t border-gray-200 pt-4 space-y-3">
                         <div className="flex justify-between text-sm">
-                          <span className="text-gray-400">Rooms:</span>
-                          <span className="text-white">{numberOfRooms}</span>
+                          <span className="text-gray-600">Rooms:</span>
+                          <span className="text-gray-900">{numberOfRooms}</span>
                         </div>
                         <div className="flex justify-between text-sm">
-                          <span className="text-gray-400">Total Guests:</span>
-                          <span className="text-white">{totalGuests}</span>
+                          <span className="text-gray-600">Total Guests:</span>
+                          <span className="text-gray-900">{totalGuests}</span>
                         </div>
                         {checkIn && checkOut && (
                           <>
                             <div className="flex justify-between text-sm">
-                              <span className="text-gray-400">Check-in:</span>
-                              <span className="text-white">
+                              <span className="text-gray-600">Check-in:</span>
+                              <span className="text-gray-900">
                                 {new Date(checkIn).toLocaleDateString()}
                               </span>
                             </div>
                             <div className="flex justify-between text-sm">
-                              <span className="text-gray-400">Check-out:</span>
-                              <span className="text-white">
+                              <span className="text-gray-600">Check-out:</span>
+                              <span className="text-gray-900">
                                 {new Date(checkOut).toLocaleDateString()}
                               </span>
                             </div>
                             <div className="flex justify-between text-sm">
-                              <span className="text-gray-400">Nights:</span>
-                              <span className="text-white">{nights}</span>
+                              <span className="text-gray-600">Nights:</span>
+                              <span className="text-gray-900">{nights}</span>
                             </div>
                           </>
                         )}
@@ -703,26 +703,26 @@ function BookingContent() {
 
                       {/* Price Breakdown */}
                       {nights > 0 && (
-                        <div className="border-t border-zinc-800 pt-4 space-y-2">
+                        <div className="border-t border-gray-200 pt-4 space-y-2">
                           <div className="flex justify-between text-sm">
-                            <span className="text-gray-400">
+                            <span className="text-gray-600">
                               {currencySymbol}
                               {pricePerNight.toLocaleString()} × {nights} night
                               {nights > 1 ? 's' : ''} × {numberOfRooms} room{numberOfRooms > 1 ? 's' : ''}
                             </span>
-                            <span className="text-white">
+                            <span className="text-gray-900">
                               {currencySymbol}
                               {totalPrice.toLocaleString()}
                             </span>
                           </div>
-                          <div className="flex justify-between text-base md:text-lg font-bold pt-2 border-t border-zinc-800">
-                            <span className="text-white">Total:</span>
-                            <span className="text-amber-500">
+                          <div className="flex justify-between text-base md:text-lg font-bold pt-2 border-t border-gray-200">
+                            <span className="text-gray-900">Total:</span>
+                            <span className="text-blue-600">
                               {currencySymbol}
                               {totalPrice.toLocaleString()}
                             </span>
                           </div>
-                          <p className="text-xs text-gray-400 pt-2">
+                          <p className="text-xs text-gray-600 pt-2">
                             *Taxes included. Breakfast included in all rates.
                           </p>
                         </div>
@@ -731,7 +731,7 @@ function BookingContent() {
                   )}
 
                   {!selectedRoomData && (
-                    <p className="text-gray-400 text-center py-8 text-sm">
+                    <p className="text-gray-600 text-center py-8 text-sm">
                       Select a room to see pricing details
                     </p>
                   )}

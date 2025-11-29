@@ -48,17 +48,17 @@ const amenityIcons = {
 
 export default function FeaturedRooms() {
   return (
-    <section className="py-20 bg-black">
+    <section className="py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <p className="text-amber-500 text-sm tracking-widest uppercase mb-2">
+          <p className="text-blue-600 text-sm tracking-widest uppercase mb-2">
             Our Accommodations
           </p>
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Featured <span className="text-amber-500">Rooms & Suites</span>
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            Featured <span className="text-blue-600">Rooms & Suites</span>
           </h2>
-          <p className="text-gray-400">
+          <p className="text-gray-600">
             Discover our carefully curated collection of luxurious rooms
             designed for your ultimate comfort
           </p>
@@ -69,7 +69,7 @@ export default function FeaturedRooms() {
           {rooms.map((room) => (
             <Card
               key={room.id}
-              className="bg-zinc-900 border-zinc-800 overflow-hidden hover:border-amber-500/50 transition-all duration-300 group"
+              className="bg-white border-gray-200 overflow-hidden hover:border-blue-500/50 transition-all duration-300 group hover:shadow-lg"
             >
               <div className="relative h-64 overflow-hidden">
                 <Image
@@ -78,7 +78,7 @@ export default function FeaturedRooms() {
                   fill
                   className="object-cover group-hover:scale-110 transition-transform duration-500"
                 />
-                <div className="absolute top-4 right-4 bg-amber-600 text-white px-4 py-2 rounded">
+                <div className="absolute top-4 right-4 bg-blue-600 text-white px-4 py-2 rounded">
                   <span className="text-xs font-semibold block">{room.priceKES}</span>
                   <span className="text-xs block opacity-90">{room.priceUSD}</span>
                   <span className="text-xs block mt-1">per night</span>
@@ -86,23 +86,23 @@ export default function FeaturedRooms() {
               </div>
               <CardContent className="p-6 space-y-4">
                 <div>
-                  <h3 className="text-2xl font-bold text-white mb-2">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">
                     {room.name}
                   </h3>
-                  <p className="text-gray-400">{room.description}</p>
-                  <p className="text-sm text-amber-400 mt-2">
+                  <p className="text-gray-600">{room.description}</p>
+                  <p className="text-sm text-blue-600 mt-2">
                     Available: {room.beds.join(' or ')}
                   </p>
                 </div>
 
                 {/* Amenities */}
-                <div className="flex items-center gap-4 pt-2 border-t border-zinc-800">
+                <div className="flex items-center gap-4 pt-2 border-t border-gray-200">
                   {room.amenities.slice(0, 4).map((amenity, index) => {
                     const Icon = amenityIcons[amenity as keyof typeof amenityIcons];
                     return Icon ? (
                       <div
                         key={index}
-                        className="text-amber-500"
+                        className="text-blue-600"
                         title={amenity}
                       >
                         <Icon className="w-5 h-5" />
@@ -113,7 +113,7 @@ export default function FeaturedRooms() {
 
                 <Button
                   asChild
-                  className="w-full bg-amber-600 hover:bg-amber-700 text-white"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   <Link href={`/booking?room=${room.id}`}>BOOK NOW</Link>
                 </Button>
@@ -128,7 +128,7 @@ export default function FeaturedRooms() {
             asChild
             variant="outline"
             size="lg"
-            className="border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-white"
+            className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white"
           >
             <Link href="/rooms">VIEW ALL ROOMS</Link>
           </Button>

@@ -5,11 +5,11 @@ import { SignupForm } from '@/components/auth/SignupForm';
 
 export default function SignupPage() {
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="max-w-2xl w-full">
         {/* Logo & Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-600 rounded-full mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-4">
             <svg
               className="w-10 h-10 text-white"
               fill="none"
@@ -24,25 +24,25 @@ export default function SignupPage() {
               />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">
-            Hotel <span className="text-amber-500">Hippo Buck</span>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Hotel <span className="text-blue-600">Hippo Buck</span>
           </h1>
-          <p className="text-gray-400">
+          <p className="text-gray-600">
             Create your staff account to get started.
           </p>
         </div>
 
         {/* Signup Card */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl shadow-xl p-8">
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-8">
           <SignupForm />
 
           {/* Divider */}
           <div className="mt-6 relative">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-zinc-800" />
+              <div className="w-full border-t border-gray-200" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-zinc-900 text-gray-500">
+              <span className="px-2 bg-white text-gray-500">
                 Already have an account?
               </span>
             </div>
@@ -52,7 +52,7 @@ export default function SignupPage() {
           <div className="mt-6 text-center">
             <Link
               href="/login"
-              className="text-amber-500 hover:text-amber-400 font-medium transition-colors"
+              className="text-blue-600 hover:text-blue-500 font-medium transition-colors"
             >
               Sign in to your account →
             </Link>

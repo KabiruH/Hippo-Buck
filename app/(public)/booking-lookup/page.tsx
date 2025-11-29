@@ -111,13 +111,13 @@ export default function BookingLookupPage() {
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      PENDING: 'bg-yellow-900/30 text-yellow-400 border-yellow-700',
-      CONFIRMED: 'bg-green-900/30 text-green-400 border-green-700',
-      CHECKED_IN: 'bg-blue-900/30 text-blue-400 border-blue-700',
-      CHECKED_OUT: 'bg-gray-900/30 text-gray-400 border-gray-700',
-      CANCELLED: 'bg-red-900/30 text-red-400 border-red-700',
+      PENDING: 'bg-yellow-100 text-yellow-800 border-yellow-300',
+      CONFIRMED: 'bg-green-100 text-green-800 border-green-300',
+      CHECKED_IN: 'bg-blue-100 text-blue-800 border-blue-300',
+      CHECKED_OUT: 'bg-gray-100 text-gray-800 border-gray-300',
+      CANCELLED: 'bg-red-100 text-red-800 border-red-300',
     };
-    return colors[status] || 'bg-gray-900/30 text-gray-400 border-gray-700';
+    return colors[status] || 'bg-gray-100 text-gray-800 border-gray-300';
   };
 
   const getStatusIcon = (status: string) => {
@@ -164,7 +164,7 @@ export default function BookingLookupPage() {
     : 0;
 
   return (
-    <main className="min-h-screen bg-black">
+    <main className="min-h-screen bg-gray-50">
       {/* Hero Section */}
       <section className="relative h-[40vh] w-full overflow-hidden">
         <div className="absolute inset-0">
@@ -181,7 +181,7 @@ export default function BookingLookupPage() {
         <div className="relative h-full flex flex-col items-center justify-center text-center px-4">
           <div className="max-w-4xl mx-auto space-y-4">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-wide">
-              Find Your <span className="text-amber-500">Booking</span>
+              Find Your <span className="text-blue-400">Booking</span>
             </h1>
             <p className="text-lg md:text-xl text-white/90">
               Enter your booking number or email to view your reservation
@@ -191,12 +191,12 @@ export default function BookingLookupPage() {
       </section>
 
       {/* Search Section */}
-      <section className="py-12 bg-zinc-900">
+      <section className="py-12 bg-white">
         <div className="max-w-4xl mx-auto px-4">
           {/* Search Form */}
-          <Card className="bg-black border-zinc-800 mb-8">
+          <Card className="bg-white border-gray-200 mb-8 shadow-lg">
             <CardHeader>
-              <CardTitle className="text-white text-xl">Search Your Booking</CardTitle>
+              <CardTitle className="text-gray-900 text-xl">Search Your Booking</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSearch} className="space-y-6">
@@ -208,8 +208,8 @@ export default function BookingLookupPage() {
                     variant={searchType === 'bookingNumber' ? 'default' : 'outline'}
                     className={
                       searchType === 'bookingNumber'
-                        ? 'bg-amber-600 hover:bg-amber-700'
-                        : 'border-zinc-700 text-black hover:bg-yellow-800'
+                        ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                        : 'border-gray-300 text-gray-900 hover:bg-gray-100'
                     }
                   >
                     Booking Number
@@ -220,8 +220,8 @@ export default function BookingLookupPage() {
                     variant={searchType === 'email' ? 'default' : 'outline'}
                     className={
                       searchType === 'email'
-                        ? 'bg-amber-600 hover:bg-amber-700'
-                        : 'border-zinc-700 text-black hover:bg-yellow-800'
+                        ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                        : 'border-gray-300 text-gray-900 hover:bg-gray-100'
                     }
                   >
                     Email Address
@@ -230,7 +230,7 @@ export default function BookingLookupPage() {
 
                 {/* Search Input */}
                 <div className="space-y-2">
-                  <Label htmlFor="search" className="text-white">
+                  <Label htmlFor="search" className="text-gray-900">
                     {searchType === 'bookingNumber'
                       ? 'Enter Booking Number'
                       : 'Enter Email Address'}
@@ -247,7 +247,7 @@ export default function BookingLookupPage() {
                           ? 'e.g., BK123456'
                           : 'e.g., guest@example.com'
                       }
-                      className="pl-10 bg-zinc-900 border-zinc-700 text-white"
+                      className="pl-10 bg-gray-50 border-gray-300 text-gray-900"
                       required
                     />
                   </div>
@@ -255,9 +255,9 @@ export default function BookingLookupPage() {
 
                 {/* Error Message */}
                 {error && (
-                  <div className="bg-red-900/30 border border-red-700 rounded-lg p-4 flex items-start gap-3">
-                    <XCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-                    <p className="text-red-200 text-sm">{error}</p>
+                  <div className="bg-red-50 border border-red-300 rounded-lg p-4 flex items-start gap-3">
+                    <XCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+                    <p className="text-red-800 text-sm">{error}</p>
                   </div>
                 )}
 
@@ -265,7 +265,7 @@ export default function BookingLookupPage() {
                 <Button
                   type="submit"
                   disabled={isSearching}
-                  className="w-full bg-amber-600 hover:bg-amber-700 text-white"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                   size="lg"
                 >
                   {isSearching ? (
@@ -307,11 +307,11 @@ export default function BookingLookupPage() {
               </div>
 
               {/* Booking Info */}
-              <Card className="bg-black border-zinc-800">
+              <Card className="bg-white border-gray-200 shadow-lg">
                 <CardHeader>
-                  <CardTitle className="text-white flex items-center justify-between">
+                  <CardTitle className="text-gray-900 flex items-center justify-between">
                     <span>Booking Details</span>
-                    <span className="text-amber-500 text-lg font-mono">
+                    <span className="text-blue-600 text-lg font-mono">
                       {booking.bookingNumber}
                     </span>
                   </CardTitle>
@@ -320,48 +320,48 @@ export default function BookingLookupPage() {
                   {/* Guest Information */}
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-3">
-                      <h3 className="text-white font-semibold text-sm uppercase tracking-wider">
+                      <h3 className="text-gray-900 font-semibold text-sm uppercase tracking-wider">
                         Guest Information
                       </h3>
                       <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-gray-300">
-                          <Users className="w-4 h-4 text-amber-500" />
+                        <div className="flex items-center gap-2 text-gray-700">
+                          <Users className="w-4 h-4 text-blue-600" />
                           <span>
                             {booking.guestFirstName} {booking.guestLastName}
                           </span>
                         </div>
-                        <div className="flex items-center gap-2 text-gray-300">
-                          <Mail className="w-4 h-4 text-amber-500" />
+                        <div className="flex items-center gap-2 text-gray-700">
+                          <Mail className="w-4 h-4 text-blue-600" />
                           <span className="text-sm">{booking.guestEmail}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-gray-300">
-                          <Phone className="w-4 h-4 text-amber-500" />
+                        <div className="flex items-center gap-2 text-gray-700">
+                          <Phone className="w-4 h-4 text-blue-600" />
                           <span className="text-sm">{booking.guestPhone}</span>
                         </div>
                       </div>
                     </div>
 
                     <div className="space-y-3">
-                      <h3 className="text-white font-semibold text-sm uppercase tracking-wider">
+                      <h3 className="text-gray-900 font-semibold text-sm uppercase tracking-wider">
                         Stay Details
                       </h3>
                       <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-gray-300">
-                          <Calendar className="w-4 h-4 text-amber-500" />
+                        <div className="flex items-center gap-2 text-gray-700">
+                          <Calendar className="w-4 h-4 text-blue-600" />
                           <div className="text-sm">
-                            <p className="font-medium text-white">Check-in</p>
+                            <p className="font-medium text-gray-900">Check-in</p>
                             <p>{formatDate(booking.checkInDate)}</p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 text-gray-300">
-                          <Calendar className="w-4 h-4 text-amber-500" />
+                        <div className="flex items-center gap-2 text-gray-700">
+                          <Calendar className="w-4 h-4 text-blue-600" />
                           <div className="text-sm">
-                            <p className="font-medium text-white">Check-out</p>
+                            <p className="font-medium text-gray-900">Check-out</p>
                             <p>{formatDate(booking.checkOutDate)}</p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 text-gray-300">
-                          <Users className="w-4 h-4 text-amber-500" />
+                        <div className="flex items-center gap-2 text-gray-700">
+                          <Users className="w-4 h-4 text-blue-600" />
                           <span className="text-sm">
                             {booking.numberOfAdults} Adults, {booking.numberOfChildren}{' '}
                             Children
@@ -372,32 +372,32 @@ export default function BookingLookupPage() {
                   </div>
 
                   {/* Rooms */}
-                  <div className="border-t border-zinc-800 pt-4">
-                    <h3 className="text-white font-semibold text-sm uppercase tracking-wider mb-3">
+                  <div className="border-t border-gray-200 pt-4">
+                    <h3 className="text-gray-900 font-semibold text-sm uppercase tracking-wider mb-3">
                       Room(s) Booked
                     </h3>
                     <div className="space-y-2">
                       {booking.rooms.map((bookingRoom, index) => (
                         <div
                           key={index}
-                          className="bg-zinc-900/50 rounded-lg p-3 flex items-center justify-between"
+                          className="bg-blue-50 rounded-lg p-3 flex items-center justify-between"
                         >
                           <div className="flex items-center gap-3">
-                            <DoorOpen className="w-5 h-5 text-amber-500" />
+                            <DoorOpen className="w-5 h-5 text-blue-600" />
                             <div>
-                              <p className="text-white font-medium">
+                              <p className="text-gray-900 font-medium">
                                 Room {bookingRoom.room.roomNumber}
                               </p>
-                              <p className="text-gray-400 text-sm">
+                              <p className="text-gray-600 text-sm">
                                 {bookingRoom.room.roomType.name}
                               </p>
                             </div>
                           </div>
                           <div className="text-right">
-                            <p className="text-white font-semibold">
+                            <p className="text-gray-900 font-semibold">
                               {formatCurrency(Number(bookingRoom.totalPrice))}
                             </p>
-                            <p className="text-gray-400 text-xs">
+                            <p className="text-gray-600 text-xs">
                               {formatCurrency(Number(bookingRoom.ratePerNight))} ×{' '}
                               {bookingRoom.numberOfNights} nights
                             </p>
@@ -409,36 +409,36 @@ export default function BookingLookupPage() {
 
                   {/* Special Requests */}
                   {booking.specialRequests && (
-                    <div className="border-t border-zinc-800 pt-4">
-                      <h3 className="text-white font-semibold text-sm uppercase tracking-wider mb-2">
+                    <div className="border-t border-gray-200 pt-4">
+                      <h3 className="text-gray-900 font-semibold text-sm uppercase tracking-wider mb-2">
                         Special Requests
                       </h3>
-                      <p className="text-gray-300 text-sm">{booking.specialRequests}</p>
+                      <p className="text-gray-700 text-sm">{booking.specialRequests}</p>
                     </div>
                   )}
 
                   {/* Payment Summary */}
-                  <div className="border-t border-zinc-800 pt-4">
-                    <h3 className="text-white font-semibold text-sm uppercase tracking-wider mb-3">
+                  <div className="border-t border-gray-200 pt-4">
+                    <h3 className="text-gray-900 font-semibold text-sm uppercase tracking-wider mb-3">
                       Payment Summary
                     </h3>
                     <div className="space-y-2">
-                      <div className="flex justify-between text-gray-300">
+                      <div className="flex justify-between text-gray-700">
                         <span>Total Amount:</span>
-                        <span className="font-semibold text-white">
+                        <span className="font-semibold text-gray-900">
                           {formatCurrency(Number(booking.totalAmount))}
                         </span>
                       </div>
-                      <div className="flex justify-between text-gray-300">
+                      <div className="flex justify-between text-gray-700">
                         <span>Amount Paid:</span>
-                        <span className="font-semibold text-green-400">
+                        <span className="font-semibold text-green-600">
                           {formatCurrency(Number(booking.paidAmount))}
                         </span>
                       </div>
                       {remainingBalance > 0 && (
-                        <div className="flex justify-between text-gray-300 pt-2 border-t border-zinc-800">
+                        <div className="flex justify-between text-gray-700 pt-2 border-t border-gray-200">
                           <span className="font-semibold">Balance Due:</span>
-                          <span className="font-bold text-amber-500 text-lg">
+                          <span className="font-bold text-blue-600 text-lg">
                             {formatCurrency(remainingBalance)}
                           </span>
                         </div>
@@ -448,28 +448,28 @@ export default function BookingLookupPage() {
 
                   {/* Payment History */}
                   {booking.payments && booking.payments.length > 0 && (
-                    <div className="border-t border-zinc-800 pt-4">
-                      <h3 className="text-white font-semibold text-sm uppercase tracking-wider mb-3">
+                    <div className="border-t border-gray-200 pt-4">
+                      <h3 className="text-gray-900 font-semibold text-sm uppercase tracking-wider mb-3">
                         Payment History
                       </h3>
                       <div className="space-y-2">
                         {booking.payments.map((payment, index) => (
                           <div
                             key={index}
-                            className="bg-zinc-900/50 rounded p-3 flex items-center justify-between text-sm"
+                            className="bg-gray-50 rounded p-3 flex items-center justify-between text-sm"
                           >
                             <div className="flex items-center gap-2">
-                              <CreditCard className="w-4 h-4 text-amber-500" />
+                              <CreditCard className="w-4 h-4 text-blue-600" />
                               <div>
-                                <p className="text-white">
+                                <p className="text-gray-900">
                                   {payment.paymentMethod || 'N/A'}
                                 </p>
-                                <p className="text-gray-400 text-xs">
+                                <p className="text-gray-600 text-xs">
                                   {new Date(payment.createdAt).toLocaleDateString()}
                                 </p>
                               </div>
                             </div>
-                            <span className="text-green-400 font-semibold">
+                            <span className="text-green-600 font-semibold">
                               {formatCurrency(Number(payment.amount))}
                             </span>
                           </div>
@@ -480,10 +480,10 @@ export default function BookingLookupPage() {
 
                   {/* Payment Action */}
                   {booking.status === 'PENDING' && remainingBalance > 0 && (
-                    <div className="border-t border-zinc-800 pt-4">
+                    <div className="border-t border-gray-200 pt-4">
                       <Button
                         onClick={handleMakePayment}
-                        className="w-full bg-amber-600 hover:bg-amber-700 text-white"
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                         size="lg"
                       >
                         <CreditCard className="w-5 h-5 mr-2" />

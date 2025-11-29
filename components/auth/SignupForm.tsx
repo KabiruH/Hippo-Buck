@@ -177,7 +177,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onSuccess }) => {
               value={formData.firstName}
               onChange={(e) => handleChange('firstName', e.target.value)}
               disabled={isLoading}
-              className={`pl-10 bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus-visible:ring-amber-500 ${
+              className={`pl-10 bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus-visible:ring-blue-500 ${
                 errors.firstName ? 'border-red-500' : ''
               }`}
             />
@@ -201,7 +201,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onSuccess }) => {
               value={formData.lastName}
               onChange={(e) => handleChange('lastName', e.target.value)}
               disabled={isLoading}
-              className={`pl-10 bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus-visible:ring-amber-500 ${
+              className={`pl-10 bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus-visible:ring-blue-500 ${
                 errors.lastName ? 'border-red-500' : ''
               }`}
             />
@@ -226,7 +226,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onSuccess }) => {
             value={formData.email}
             onChange={(e) => handleChange('email', e.target.value)}
             disabled={isLoading}
-            className={`pl-10 bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus-visible:ring-amber-500 ${
+            className={`pl-10 bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus-visible:ring-blue-500 ${
               errors.email ? 'border-red-500' : ''
             }`}
           />
@@ -248,7 +248,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onSuccess }) => {
             value={formData.phone}
             onChange={(e) => handleChange('phone', e.target.value)}
             disabled={isLoading}
-            className={`pl-10 bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus-visible:ring-amber-500 ${
+            className={`pl-10 bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus-visible:ring-blue-500 ${
               errors.phone ? 'border-red-500' : ''
             }`}
           />
@@ -266,7 +266,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onSuccess }) => {
           onValueChange={(value) => handleChange('role', value)}
           disabled={isLoading}
         >
-          <SelectTrigger className="bg-zinc-800 border-zinc-700 text-white focus:ring-amber-500">
+          <SelectTrigger className="bg-zinc-800 border-zinc-700 text-white focus:ring-blue-500">
             <SelectValue placeholder="Select your role" />
           </SelectTrigger>
           <SelectContent className="bg-zinc-800 border-zinc-700 text-white">
@@ -293,7 +293,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onSuccess }) => {
             value={formData.password}
             onChange={(e) => handleChange('password', e.target.value)}
             disabled={isLoading}
-            className={`pl-10 bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus-visible:ring-amber-500 ${
+            className={`pl-10 bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus-visible:ring-blue-500 ${
               errors.password ? 'border-red-500' : ''
             }`}
           />
@@ -317,7 +317,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onSuccess }) => {
             value={formData.confirmPassword}
             onChange={(e) => handleChange('confirmPassword', e.target.value)}
             disabled={isLoading}
-            className={`pl-10 bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus-visible:ring-amber-500 ${
+            className={`pl-10 bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus-visible:ring-blue-500 ${
               errors.confirmPassword ? 'border-red-500' : ''
             }`}
           />
@@ -333,18 +333,18 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onSuccess }) => {
           id="terms"
           type="checkbox"
           required
-          className="mt-1 h-4 w-4 rounded border-zinc-700 bg-zinc-800 text-amber-600 focus:ring-amber-500 focus:ring-offset-zinc-900"
+          className="mt-1 h-4 w-4 rounded border-zinc-700 bg-zinc-800 text-blue-600 focus:ring-blue-500 focus:ring-offset-zinc-900"
         />
         <Label
           htmlFor="terms"
           className="text-sm text-gray-300 font-normal leading-relaxed"
         >
           I agree to the{' '}
-          <a href="#" className="text-amber-500 hover:text-amber-400 underline">
+          <a href="#" className="text-blue-500 hover:text-blue-400 underline">
             Terms and Conditions
           </a>{' '}
           and{' '}
-          <a href="#" className="text-amber-500 hover:text-amber-400 underline">
+          <a href="#" className="text-blue-500 hover:text-blue-400 underline">
             Privacy Policy
           </a>
         </Label>
@@ -354,7 +354,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onSuccess }) => {
       <Button
         type="submit"
         disabled={isLoading}
-        className="w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold"
+        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold"
       >
         {isLoading ? 'Creating Account...' : 'Create Account'}
       </Button>
