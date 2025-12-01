@@ -6,6 +6,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { AppSidebar } from '@/components/layout/app-sidebar';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { Separator } from '@/components/ui/separator';
+import { SessionProvider } from "next-auth/react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -82,7 +83,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </header>
 
           {/* Main Content */}
+              <SessionProvider>
           <main className="flex-1">{children}</main>
+          </SessionProvider>
         </SidebarInset>
       </div>
     </SidebarProvider>

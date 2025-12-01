@@ -1,4 +1,6 @@
 // app/admin/rooms/components/RoomCard.tsx
+import { useState } from 'react';
+import { useSession } from 'next-auth/react';
 import {
   DoorOpen,
   Bed,
@@ -14,7 +16,11 @@ import {
   Mail,
   Phone,
   Calendar,
+  ChevronDown,
+  ChevronUp,
+  Pencil,
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface Room {
   id: string;
@@ -52,9 +58,14 @@ interface Room {
 
 interface RoomCardProps {
   room: Room;
+  onEdit?: (room: Room) => void;
 }
 
-export function RoomCard({ room }: RoomCardProps) {
+export function RoomCard({ room, onEdit }: RoomCardProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const { data: session } = useSession();
+const userRole = (session?.user as any)?.role?.toLowerCase();
+
   const getStatusConfig = (status: string) => {
     switch (status) {
       case 'AVAILABLE':
@@ -129,8 +140,9 @@ export function RoomCard({ room }: RoomCardProps) {
   return (
     <div className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-200">
       <div className="grid md:grid-cols-3 gap-0">
+
         {/* Image Section */}
-        <div className="relative h-64 md:h-auto">
+        <div className="relative h-48 md:h-auto">
           {room.roomType.image ? (
             <img
               src={room.roomType.image}
@@ -142,7 +154,7 @@ export function RoomCard({ room }: RoomCardProps) {
               <DoorOpen className="w-16 h-16 text-blue-600" />
             </div>
           )}
-          {/* Status Badge Overlay */}
+
           <div className="absolute top-4 right-4">
             <span
               className={`px-3 py-1.5 text-xs font-semibold rounded-full border flex items-center gap-1 shadow-lg backdrop-blur-sm ${statusConfig.color}`}
@@ -155,11 +167,14 @@ export function RoomCard({ room }: RoomCardProps) {
 
         {/* Content Section */}
         <div className="md:col-span-2 p-6">
+
           {/* Header */}
           <div className="flex items-start justify-between mb-4">
-            <div>
+            <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
-                <h3 className="text-2xl font-bold text-gray-900">Room {room.roomNumber}</h3>
+                <h3 className="text-2xl font-bold text-gray-900">
+                  Room {room.roomNumber}
+                </h3>
                 {room.floor && (
                   <span className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded border border-gray-200">
                     Floor {room.floor}
@@ -168,75 +183,48 @@ export function RoomCard({ room }: RoomCardProps) {
               </div>
               <p className="text-lg font-semibold text-blue-600">{room.roomType.name}</p>
             </div>
-            <div className="text-right">
-              <p className="text-3xl font-bold text-gray-900">
-                {formatCurrency(room.roomType.basePrice)}
-              </p>
-              <p className="text-sm text-gray-600">per night</p>
+
+            <div className="flex items-start gap-3">
+              <div className="text-right">
+                <p className="text-2xl font-bold text-gray-900">
+                  {formatCurrency(room.roomType.basePrice)}
+                </p>
+                <p className="text-xs text-gray-600">per night</p>
+              </div>
+
+              {/* Edit Button (Admin & Manager Only) */}
+              {onEdit &&
+                userRole &&
+                ['admin', 'manager'].includes(userRole) && (
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => onEdit(room)}
+                    className="rounded-full hover:bg-yellow-50 hover:text-yellow-600 transition-all"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                )}
             </div>
           </div>
-
-          {/* Description */}
-          {room.roomType.description && (
-            <p className="text-gray-700 text-sm mb-4">{room.roomType.description}</p>
-          )}
-
-          {/* Current Booking Info */}
-          {room.currentBooking && (
-            <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <p className="text-sm font-semibold text-blue-900 mb-1">
-                    Current Guest
-                  </p>
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-sm text-blue-800">
-                      <User className="w-4 h-4" />
-                      <span>
-                        {room.currentBooking.guestFirstName} {room.currentBooking.guestLastName}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-blue-700">
-                      <Mail className="w-4 h-4" />
-                      <span>{room.currentBooking.guestEmail}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-blue-700">
-                      <Phone className="w-4 h-4" />
-                      <span>{room.currentBooking.guestPhone}</span>
-                    </div>
-                  </div>
-                </div>
-                <span className="px-2 py-1 text-xs bg-blue-200 text-blue-800 rounded-full font-medium">
-                  {room.currentBooking.bookingNumber}
-                </span>
-              </div>
-              <div className="flex items-center gap-4 text-xs text-blue-700 pt-3 border-t border-blue-200">
-                <div className="flex items-center gap-1">
-                  <Calendar className="w-3.5 h-3.5" />
-                  <span>Check-in: {formatDate(room.currentBooking.checkInDate)}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Calendar className="w-3.5 h-3.5" />
-                  <span>Check-out: {formatDate(room.currentBooking.checkOutDate)}</span>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Room Details */}
           <div className="flex flex-wrap gap-4 mb-4">
             <div className="flex items-center gap-2 text-gray-700">
               <Users className="w-5 h-5 text-blue-600" />
               <span className="text-sm">
-                Up to {room.roomType.maxOccupancy} guest{room.roomType.maxOccupancy !== 1 ? 's' : ''}
+                Up to {room.roomType.maxOccupancy} guest
+                {room.roomType.maxOccupancy !== 1 ? 's' : ''}
               </span>
             </div>
+
             {room.roomType.bedType && (
               <div className="flex items-center gap-2 text-gray-700">
                 <Bed className="w-5 h-5 text-blue-600" />
                 <span className="text-sm">{room.roomType.bedType}</span>
               </div>
             )}
+
             {room.roomType.size && (
               <div className="flex items-center gap-2 text-gray-700">
                 <DoorOpen className="w-5 h-5 text-blue-600" />
@@ -245,25 +233,104 @@ export function RoomCard({ room }: RoomCardProps) {
             )}
           </div>
 
-          {/* Amenities */}
-          {room.roomType.amenities.length > 0 && (
-            <div className="border-t border-gray-200 pt-4">
-              <h4 className="text-sm font-semibold text-gray-900 mb-3 uppercase tracking-wider">
-                Amenities
-              </h4>
-              <div className="flex flex-wrap gap-2">
-                {room.roomType.amenities.map((amenity, index) => (
-                  <span
-                    key={index}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-xs border border-gray-200"
-                  >
-                    {getAmenityIcon(amenity)}
-                    {amenity}
-                  </span>
-                ))}
-              </div>
+          {/* Expanded Section */}
+          {isExpanded && (
+            <div className="space-y-4 animate-in slide-in-from-top duration-200">
+
+              {room.roomType.description && (
+                <p className="text-gray-700 text-sm">{room.roomType.description}</p>
+              )}
+
+              {/* Current Booking */}
+              {room.currentBooking && (
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <p className="text-sm font-semibold text-blue-900 mb-1">Current Guest</p>
+
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 text-sm text-blue-800">
+                          <User className="w-4 h-4" />
+                          <span>
+                            {room.currentBooking.guestFirstName}{' '}
+                            {room.currentBooking.guestLastName}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2 text-sm text-blue-700">
+                          <Mail className="w-4 h-4" />
+                          <span>{room.currentBooking.guestEmail}</span>
+                        </div>
+
+                        <div className="flex items-center gap-2 text-sm text-blue-700">
+                          <Phone className="w-4 h-4" />
+                          <span>{room.currentBooking.guestPhone}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <span className="px-2 py-1 text-xs bg-blue-200 text-blue-800 rounded-full font-medium">
+                      {room.currentBooking.bookingNumber}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-4 text-xs text-blue-700 pt-3 border-t border-blue-200">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-3.5 h-3.5" />
+                      <span>Check-in: {formatDate(room.currentBooking.checkInDate)}</span>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-3.5 h-3.5" />
+                      <span>Check-out: {formatDate(room.currentBooking.checkOutDate)}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Amenities */}
+              {room.roomType.amenities.length > 0 && (
+                <div className="border-t border-gray-200 pt-4">
+                  <h4 className="text-sm font-semibold text-gray-900 mb-3 uppercase tracking-wider">
+                    Amenities
+                  </h4>
+
+                  <div className="flex flex-wrap gap-2">
+                    {room.roomType.amenities.map((amenity, index) => (
+                      <span
+                        key={index}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-xs border border-gray-200"
+                      >
+                        {getAmenityIcon(amenity)}
+                        {amenity}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
+
+          {/* Show More / Less */}
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <Button
+              onClick={() => setIsExpanded(!isExpanded)}
+              variant="outline"
+              className="w-full border-gray-300 text-gray-700 hover:bg-gray-50"
+            >
+              {isExpanded ? (
+                <>
+                  <ChevronUp className="w-4 h-4 mr-2" />
+                  Show Less
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="w-4 h-4 mr-2" />
+                  Show More
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </div>
     </div>
