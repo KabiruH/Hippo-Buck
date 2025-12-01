@@ -6,10 +6,10 @@ import { UserRole } from '@/lib/constant';
 
 export async function POST(
   request: NextRequest,
-  context: { params: Promise<{ userId: string }> } // 👈 updated type
+  context: { params: Promise<{ userId: string }> }
 ) {
   try {
-    const { userId } = await context.params; // 👈 await the Promise here
+    const { userId } = await context.params;
 
     // Get token from Authorization header
     const authHeader = request.headers.get('authorization');
@@ -30,10 +30,10 @@ export async function POST(
       );
     }
 
-    // Check if requester is admin
-    if (decoded.role !== UserRole.ADMIN) {
+    // Check if requester is admin or manager
+    if (decoded.role !== UserRole.ADMIN && decoded.role !== UserRole.MANAGER) {
       return NextResponse.json(
-        { error: 'Only administrators can approve users' },
+        { error: 'Only administrators and managers can approve users' },
         { status: 403 }
       );
     }

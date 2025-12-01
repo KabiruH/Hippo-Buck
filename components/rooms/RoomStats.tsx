@@ -21,21 +21,22 @@ export function RoomStats({
 }: RoomStatsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
-      {/* Total Rooms */}
-      <Card className="bg-linear-to-br from-amber-50 to-amber-100 border-amber-200 hover:shadow-lg transition-shadow">
+
+      {/* Total Rooms (amber → blue) */}
+      <Card className="bg-linear-to-br from-blue-50 to-blue-100 border border-blue-200 hover:shadow-lg transition-shadow">
         <CardContent className="p-4">
           <div className="flex flex-col items-center text-center">
-            <div className="w-12 h-12 rounded-xl bg-amber-500 flex items-center justify-center shadow-lg mb-2">
+            <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg mb-2">
               <DoorOpen className="w-6 h-6 text-white" />
             </div>
-            <p className="text-amber-700 text-xs font-medium mb-1">Total</p>
-            <p className="text-2xl font-bold text-amber-900">{totalRooms}</p>
+            <p className="text-blue-700 text-xs font-medium mb-1">Total</p>
+            <p className="text-2xl font-bold text-blue-900">{totalRooms}</p>
           </div>
         </CardContent>
       </Card>
 
-      {/* Available */}
-      <Card className="bg-linear-to-br from-green-50 to-green-100 border-green-200 hover:shadow-lg transition-shadow">
+      {/* Available (keep green) */}
+      <Card className="bg-linear-to-br from-green-50 to-green-100 border border-green-200 hover:shadow-lg transition-shadow">
         <CardContent className="p-4">
           <div className="flex flex-col items-center text-center">
             <div className="w-12 h-12 rounded-xl bg-green-500 flex items-center justify-center shadow-lg mb-2">
@@ -47,21 +48,21 @@ export function RoomStats({
         </CardContent>
       </Card>
 
-      {/* Occupied */}
-      <Card className="bg-linear-to-br from-orange-50 to-orange-100 border-orange-200 hover:shadow-lg transition-shadow">
+      {/* Occupied (orange → blue variant since you want no orange) */}
+      <Card className="bg-linear-to-br from-blue-50 to-blue-100 border border-blue-200 hover:shadow-lg transition-shadow">
         <CardContent className="p-4">
           <div className="flex flex-col items-center text-center">
-            <div className="w-12 h-12 rounded-xl bg-orange-500 flex items-center justify-center shadow-lg mb-2">
+            <div className="w-12 h-12 rounded-xl bg-blue-700 flex items-center justify-center shadow-lg mb-2">
               <DoorOpen className="w-6 h-6 text-white" />
             </div>
-            <p className="text-orange-700 text-xs font-medium mb-1">Occupied</p>
-            <p className="text-2xl font-bold text-orange-900">{occupiedRooms}</p>
+            <p className="text-blue-700 text-xs font-medium mb-1">Occupied</p>
+            <p className="text-2xl font-bold text-blue-900">{occupiedRooms}</p>
           </div>
         </CardContent>
       </Card>
 
-      {/* Reserved */}
-      <Card className="bg-linear-to-br from-blue-50 to-blue-100 border-blue-200 hover:shadow-lg transition-shadow">
+      {/* Reserved (already blue, kept) */}
+      <Card className="bg-linear-to-br from-blue-50 to-blue-100 border border-blue-200 hover:shadow-lg transition-shadow">
         <CardContent className="p-4">
           <div className="flex flex-col items-center text-center">
             <div className="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center shadow-lg mb-2">
@@ -73,8 +74,8 @@ export function RoomStats({
         </CardContent>
       </Card>
 
-      {/* Cleaning */}
-      <Card className="bg-linear-to-br from-purple-50 to-purple-100 border-purple-200 hover:shadow-lg transition-shadow">
+      {/* Cleaning (keep purple) */}
+      <Card className="bg-linear-to-br from-purple-50 to-purple-100 border border-purple-200 hover:shadow-lg transition-shadow">
         <CardContent className="p-4">
           <div className="flex flex-col items-center text-center">
             <div className="w-12 h-12 rounded-xl bg-purple-500 flex items-center justify-center shadow-lg mb-2">
@@ -86,8 +87,8 @@ export function RoomStats({
         </CardContent>
       </Card>
 
-      {/* Maintenance */}
-      <Card className="bg-linear-to-br from-red-50 to-red-100 border-red-200 hover:shadow-lg transition-shadow">
+      {/* Maintenance (keep red) */}
+      <Card className="bg-linear-to-br from-red-50 to-red-100 border border-red-200 hover:shadow-lg transition-shadow">
         <CardContent className="p-4">
           <div className="flex flex-col items-center text-center">
             <div className="w-12 h-12 rounded-xl bg-red-500 flex items-center justify-center shadow-lg mb-2">

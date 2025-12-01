@@ -25,10 +25,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Check if requester is admin
-    if (decoded.role !== UserRole.ADMIN) {
+    // Check if requester is admin or manager
+    if (decoded.role !== UserRole.ADMIN && decoded.role !== UserRole.MANAGER) {
       return NextResponse.json(
-        { error: 'Only administrators can view pending users' },
+        { error: 'Only administrators and managers can view pending users' },
         { status: 403 }
       );
     }

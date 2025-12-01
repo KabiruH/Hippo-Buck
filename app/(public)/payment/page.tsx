@@ -208,413 +208,407 @@ export default function PaymentPage() {
     );
   }
 
-  return (
-    <main className="min-h-screen bg-black">
-      {/* Hero Section */}
-      <section className="relative h-[30vh] md:h-[40vh] w-full overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            src="/2.jpg"
-            alt="Payment"
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-black/70" />
+return (
+  <main className="min-h-screen bg-gray-50">
+    {/* Hero Section */}
+    <section className="relative h-[30vh] md:h-[40vh] w-full overflow-hidden">
+      <div className="absolute inset-0">
+        <Image
+          src="/2.jpg"
+          alt="Payment"
+          fill
+          className="object-cover"
+          priority
+        />
+        <div className="absolute inset-0 bg-blue-900/40" />
+      </div>
+
+      <div className="relative h-full flex flex-col items-center justify-center text-center px-4">
+        <div className="max-w-4xl mx-auto space-y-2 md:space-y-4">
+          <Lock className="w-12 h-12 md:w-16 md:h-16 text-blue-500 mx-auto mb-4" />
+          <h1 className="text-3xl md:text-5xl font-bold text-white tracking-wide">
+            Secure <span className="text-blue-300">Payment</span>
+          </h1>
+          <p className="text-sm md:text-lg text-white/90">
+            Complete your booking payment
+          </p>
         </div>
+      </div>
+    </section>
 
-        <div className="relative h-full flex flex-col items-center justify-center text-center px-4">
-          <div className="max-w-4xl mx-auto space-y-2 md:space-y-4">
-            <Lock className="w-12 h-12 md:w-16 md:h-16 text-amber-500 mx-auto mb-4" />
-            <h1 className="text-3xl md:text-5xl font-bold text-white tracking-wide">
-              Secure <span className="text-amber-500">Payment</span>
-            </h1>
-            <p className="text-sm md:text-lg text-white/90">
-              Complete your booking payment
-            </p>
-          </div>
-        </div>
-      </section>
+    {/* Payment Section */}
+    <section className="py-8 md:py-16 bg-white">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Back Button */}
+        <Button
+          variant="ghost"
+          className="text-blue-700 hover:text-blue-900 mb-6"
+          onClick={() => router.back()}
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Booking
+        </Button>
 
-      {/* Payment Section */}
-      <section className="py-8 md:py-16 bg-zinc-900">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Back Button */}
-          <Button
-            variant="ghost"
-            className="text-white hover:text-amber-500 mb-6"
-            onClick={() => router.back()}
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Booking
-          </Button>
+        <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
+          {/* Payment Form */}
+          <div className="lg:col-span-2">
+            <Card className="bg-white border border-gray-200 shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-xl md:text-2xl text-blue-800">
+                  Choose Payment Method
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Tabs
+                  value={paymentMethod}
+                  onValueChange={(value) =>
+                    setPaymentMethod(value as 'mpesa' | 'card')
+                  }
+                  className="w-full"
+                >
+                  <TabsList className="grid w-full grid-cols-2 bg-gray-200">
+                    <TabsTrigger
+                      value="mpesa"
+                      className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                    >
+                      <Smartphone className="w-4 h-4 mr-2" />
+                      M-Pesa
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="card"
+                      className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                    >
+                      <CreditCard className="w-4 h-4 mr-2" />
+                      Card
+                    </TabsTrigger>
+                  </TabsList>
 
-          <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
-            {/* Payment Form */}
-            <div className="lg:col-span-2">
-              <Card className="bg-black border-zinc-800">
-                <CardHeader>
-                  <CardTitle className="text-xl md:text-2xl text-white">
-                    Choose Payment Method
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Tabs
-                    value={paymentMethod}
-                    onValueChange={(value) =>
-                      setPaymentMethod(value as 'mpesa' | 'card')
-                    }
-                    className="w-full"
-                  >
-                    <TabsList className="grid w-full grid-cols-2 bg-zinc-500">
-                      <TabsTrigger
-                        value="mpesa"
-                        className="data-[state=active]:bg-amber-600 data-[state=active]:text-white"
-                      >
-                        <Smartphone className="w-4 h-4 mr-2" />
-                        M-Pesa
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="card"
-                        className="data-[state=active]:bg-amber-600 data-[state=active]:text-white"
-                      >
-                        <CreditCard className="w-4 h-4 mr-2" />
-                        Card
-                      </TabsTrigger>
-                    </TabsList>
-
-                    {/* M-Pesa Payment */}
-                    <TabsContent value="mpesa" className="mt-6">
-                      <form onSubmit={handleMpesaPayment} className="space-y-6">
-                        <div className="space-y-4">
-                          <div className="flex items-center gap-3 p-4 bg-amber-600/10 border border-amber-500/30 rounded-lg">
-                            <Smartphone className="w-8 h-8 text-amber-500" />
-                            <div>
-                              <h3 className="text-white font-semibold text-sm md:text-base">
-                                M-Pesa Payment
-                              </h3>
-                              <p className="text-gray-400 text-xs md:text-sm">
-                                You'll receive a payment prompt on your phone
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label htmlFor="mpesaPhone" className="text-white">
-                              M-Pesa Phone Number
-                            </Label>
-                            <Input
-                              id="mpesaPhone"
-                              type="tel"
-                              placeholder="254712345678"
-                              value={mpesaPhone}
-                              onChange={(e) => setMpesaPhone(e.target.value)}
-                              className="bg-zinc-900 border-zinc-700 text-white text-lg"
-                              required
-                            />
-                            <p className="text-xs text-gray-400">
-                              Enter your Safaricom number (format: 254XXXXXXXXX)
-                            </p>
-                          </div>
-
-                          <div className="p-4 bg-zinc-900/50 rounded-lg border border-zinc-800">
-                            <h4 className="text-white font-semibold mb-3 text-sm">
-                              How it works:
-                            </h4>
-                            <ol className="space-y-2 text-gray-300 text-xs md:text-sm">
-                              <li className="flex gap-2">
-                                <span className="text-amber-500">1.</span>
-                                Click "Pay with M-Pesa" button
-                              </li>
-                              <li className="flex gap-2">
-                                <span className="text-amber-500">2.</span>
-                                Enter your M-Pesa PIN on your phone
-                              </li>
-                              <li className="flex gap-2">
-                                <span className="text-amber-500">3.</span>
-                                Confirm the payment
-                              </li>
-                              <li className="flex gap-2">
-                                <span className="text-amber-500">4.</span>
-                                You'll receive a confirmation SMS
-                              </li>
-                            </ol>
-                          </div>
-                        </div>
-
-                        {paymentError && (
-                          <div className="flex items-center gap-2 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
-                            <AlertCircle className="w-5 h-5 text-red-500" />
-                            <p className="text-red-400 text-sm">{paymentError}</p>
-                          </div>
-                        )}
-
-                        <Button
-                          type="submit"
-                          size="lg"
-                          className="w-full bg-green-600 hover:bg-green-700 text-white"
-                          disabled={isProcessing || !mpesaPhone}
-                        >
-                          {isProcessing ? (
-                            <>Processing...</>
-                          ) : (
-                            <>
-                              <Smartphone className="w-5 h-5 mr-2" />
-                              Pay with M-Pesa
-                            </>
-                          )}
-                        </Button>
-                      </form>
-                    </TabsContent>
-
-                    {/* Card Payment */}
-                    <TabsContent value="card" className="mt-6">
-                      <form onSubmit={handleCardPayment} className="space-y-6">
-                        <div className="space-y-4">
-                          <div className="flex items-center gap-3 p-4 bg-amber-600/10 border border-amber-500/30 rounded-lg">
-                            <CreditCard className="w-8 h-8 text-amber-500" />
-                            <div>
-                              <h3 className="text-white font-semibold text-sm md:text-base">
-                                Credit/Debit Card
-                              </h3>
-                              <p className="text-gray-400 text-xs md:text-sm">
-                                Secure payment via Stripe
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label htmlFor="cardNumber" className="text-white">
-                              Card Number
-                            </Label>
-                            <Input
-                              id="cardNumber"
-                              type="text"
-                              placeholder="1234 5678 9012 3456"
-                              value={cardNumber}
-                              onChange={(e) =>
-                                setCardNumber(formatCardNumber(e.target.value))
-                              }
-                              maxLength={19}
-                              className="bg-zinc-900 border-zinc-700 text-white text-lg"
-                              required
-                            />
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label htmlFor="cardName" className="text-white">
-                              Cardholder Name
-                            </Label>
-                            <Input
-                              id="cardName"
-                              type="text"
-                              placeholder="JOHN DOE"
-                              value={cardName}
-                              onChange={(e) =>
-                                setCardName(e.target.value.toUpperCase())
-                              }
-                              className="bg-zinc-900 border-zinc-700 text-white"
-                              required
-                            />
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label htmlFor="cardExpiry" className="text-white">
-                                Expiry Date
-                              </Label>
-                              <Input
-                                id="cardExpiry"
-                                type="text"
-                                placeholder="MM/YY"
-                                value={cardExpiry}
-                                onChange={(e) =>
-                                  setCardExpiry(formatExpiry(e.target.value))
-                                }
-                                maxLength={5}
-                                className="bg-zinc-900 border-zinc-700 text-white"
-                                required
-                              />
-                            </div>
-
-                            <div className="space-y-2">
-                              <Label htmlFor="cardCvv" className="text-white">
-                                CVV
-                              </Label>
-                              <Input
-                                id="cardCvv"
-                                type="text"
-                                placeholder="123"
-                                value={cardCvv}
-                                onChange={(e) =>
-                                  setCardCvv(
-                                    e.target.value.replace(/\D/g, '').slice(0, 3)
-                                  )
-                                }
-                                maxLength={3}
-                                className="bg-zinc-900 border-zinc-700 text-white"
-                                required
-                              />
-                            </div>
-                          </div>
-
-                          <div className="flex items-start gap-2 p-3 bg-zinc-900/50 rounded border border-zinc-800">
-                            <Lock className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-                            <p className="text-xs text-gray-400">
-                              Your payment information is encrypted and secure. We
-                              don't store your card details.
+                  {/* M-Pesa Payment */}
+                  <TabsContent value="mpesa" className="mt-6">
+                    <form onSubmit={handleMpesaPayment} className="space-y-6">
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3 p-4 bg-blue-100 border border-blue-300 rounded-lg">
+                          <Smartphone className="w-8 h-8 text-blue-600" />
+                          <div>
+                            <h3 className="text-blue-800 font-semibold text-sm md:text-base">
+                              M-Pesa Payment
+                            </h3>
+                            <p className="text-blue-700/70 text-xs md:text-sm">
+                              You'll receive a payment prompt on your phone
                             </p>
                           </div>
                         </div>
 
-                        {paymentError && (
-                          <div className="flex items-center gap-2 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
-                            <AlertCircle className="w-5 h-5 text-red-500" />
-                            <p className="text-red-400 text-sm">{paymentError}</p>
-                          </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="mpesaPhone" className="text-blue-900">
+                            M-Pesa Phone Number
+                          </Label>
+                          <Input
+                            id="mpesaPhone"
+                            type="tel"
+                            placeholder="254712345678"
+                            value={mpesaPhone}
+                            onChange={(e) => setMpesaPhone(e.target.value)}
+                            className="bg-white border-gray-300 text-blue-900 text-lg"
+                            required
+                          />
+                          <p className="text-xs text-blue-600/70">
+                            Enter your Safaricom number (format: 254XXXXXXXXX)
+                          </p>
+                        </div>
+
+                        <div className="p-4 bg-gray-100 rounded-lg border border-gray-300">
+                          <h4 className="text-blue-900 font-semibold mb-3 text-sm">
+                            How it works:
+                          </h4>
+                          <ol className="space-y-2 text-blue-700 text-xs md:text-sm">
+                            <li>1. Click “Pay with M-Pesa”</li>
+                            <li>2. Enter your M-Pesa PIN on your phone</li>
+                            <li>3. Confirm the payment</li>
+                            <li>4. You'll receive an SMS confirmation</li>
+                          </ol>
+                        </div>
+                      </div>
+
+                      {paymentError && (
+                        <div className="flex items-center gap-2 p-4 bg-red-100 border border-red-300 rounded-lg">
+                          <AlertCircle className="w-5 h-5 text-red-600" />
+                          <p className="text-red-600 text-sm">{paymentError}</p>
+                        </div>
+                      )}
+
+                      <Button
+                        type="submit"
+                        size="lg"
+                        className="w-full bg-green-600 hover:bg-green-700 text-white"
+                        disabled={isProcessing || !mpesaPhone}
+                      >
+                        {isProcessing ? (
+                          <>Processing...</>
+                        ) : (
+                          <>
+                            <Smartphone className="w-5 h-5 mr-2" />
+                            Pay with M-Pesa
+                          </>
                         )}
+                      </Button>
+                    </form>
+                  </TabsContent>
 
-                        <Button
-                          type="submit"
-                          size="lg"
-                          className="w-full bg-amber-600 hover:bg-amber-700 text-white"
-                          disabled={
-                            isProcessing ||
-                            !cardNumber ||
-                            !cardName ||
-                            !cardExpiry ||
-                            !cardCvv
-                          }
-                        >
-                          {isProcessing ? (
-                            <>Processing...</>
-                          ) : (
-                            <>
-                              <Lock className="w-5 h-5 mr-2" />
-                              Pay Securely
-                            </>
-                          )}
-                        </Button>
-                      </form>
-                    </TabsContent>
-                  </Tabs>
-                </CardContent>
-              </Card>
+                  {/* Card Payment */}
+                  <TabsContent value="card" className="mt-6">
+                    <form onSubmit={handleCardPayment} className="space-y-6">
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3 p-4 bg-blue-100 border border-blue-300 rounded-lg">
+                          <CreditCard className="w-8 h-8 text-blue-600" />
+                          <div>
+                            <h3 className="text-blue-800 font-semibold text-sm md:text-base">
+                              Credit/Debit Card
+                            </h3>
+                            <p className="text-blue-700/70 text-xs md:text-sm">
+                              Secure payment via Stripe
+                            </p>
+                          </div>
+                        </div>
 
-              {/* Security Badges */}
-              <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-xs text-gray-400">
-                <div className="flex items-center gap-2">
-                  <Lock className="w-4 h-4 text-green-500" />
-                  <span>256-bit SSL Encryption</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-green-500" />
-                  <span>PCI DSS Compliant</span>
-                </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="cardNumber" className="text-blue-900">
+                            Card Number
+                          </Label>
+                          <Input
+                            id="cardNumber"
+                            type="text"
+                            placeholder="1234 5678 9012 3456"
+                            value={cardNumber}
+                            onChange={(e) =>
+                              setCardNumber(formatCardNumber(e.target.value))
+                            }
+                            maxLength={19}
+                            className="bg-white border-gray-300 text-blue-900 text-lg"
+                            required
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="cardName" className="text-blue-900">
+                            Cardholder Name
+                          </Label>
+                          <Input
+                            id="cardName"
+                            type="text"
+                            placeholder="JOHN DOE"
+                            value={cardName}
+                            onChange={(e) =>
+                              setCardName(e.target.value.toUpperCase())
+                            }
+                            className="bg-white border-gray-300 text-blue-900"
+                            required
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="cardExpiry" className="text-blue-900">
+                              Expiry Date
+                            </Label>
+                            <Input
+                              id="cardExpiry"
+                              type="text"
+                              placeholder="MM/YY"
+                              value={cardExpiry}
+                              onChange={(e) =>
+                                setCardExpiry(formatExpiry(e.target.value))
+                              }
+                              maxLength={5}
+                              className="bg-white border-gray-300 text-blue-900"
+                              required
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="cardCvv" className="text-blue-900">
+                              CVV
+                            </Label>
+                            <Input
+                              id="cardCvv"
+                              type="text"
+                              placeholder="123"
+                              value={cardCvv}
+                              onChange={(e) =>
+                                setCardCvv(
+                                  e.target.value.replace(/\D/g, '').slice(0, 3)
+                                )
+                              }
+                              maxLength={3}
+                              className="bg-white border-gray-300 text-blue-900"
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-2 p-3 bg-gray-100 rounded border border-gray-300">
+                          <Lock className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
+                          <p className="text-xs text-blue-700/80">
+                            Your payment information is encrypted and secure. We
+                            don't store your card details.
+                          </p>
+                        </div>
+                      </div>
+
+                      {paymentError && (
+                        <div className="flex items-center gap-2 p-4 bg-red-100 border border-red-300 rounded-lg">
+                          <AlertCircle className="w-5 h-5 text-red-600" />
+                          <p className="text-red-600 text-sm">{paymentError}</p>
+                        </div>
+                      )}
+
+                      <Button
+                        type="submit"
+                        size="lg"
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                        disabled={
+                          isProcessing ||
+                          !cardNumber ||
+                          !cardName ||
+                          !cardExpiry ||
+                          !cardCvv
+                        }
+                      >
+                        {isProcessing ? (
+                          <>Processing...</>
+                        ) : (
+                          <>
+                            <Lock className="w-5 h-5 mr-2" />
+                            Pay Securely
+                          </>
+                        )}
+                      </Button>
+                    </form>
+                  </TabsContent>
+                </Tabs>
+              </CardContent>
+            </Card>
+
+            {/* Security Badges */}
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-xs text-gray-600">
+              <div className="flex items-center gap-2">
+                <Lock className="w-4 h-4 text-green-600" />
+                <span>256-bit SSL Encryption</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-green-600" />
+                <span>PCI DSS Compliant</span>
               </div>
             </div>
+          </div>
 
-            {/* Order Summary */}
-            <div className="lg:col-span-1">
-              <Card className="bg-black border-amber-500/30 sticky top-24">
-                <CardHeader>
-                  <CardTitle className="text-lg md:text-xl text-white">
-                    Order Summary
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <h3 className="text-white font-bold mb-1 text-sm md:text-base">
-                      {bookingData.room}
-                    </h3>
-                    <p className="text-amber-500 text-xs md:text-sm">
-                      {bookingData.bedType === 'single' ? 'Single' : 'Double'} Bed
-                      & Breakfast
+          {/* Order Summary */}
+          <div className="lg:col-span-1">
+            <Card className="bg-white border border-gray-200 shadow-md sticky top-24">
+              <CardHeader>
+                <CardTitle className="text-lg md:text-xl text-blue-800">
+                  Order Summary
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <h3 className="text-blue-900 font-bold mb-1 text-sm md:text-base">
+                    {bookingData.room}
+                  </h3>
+                  <p className="text-blue-600 text-xs md:text-sm">
+                    {bookingData.bedType === 'single' ? 'Single' : 'Double'} Bed
+                    & Breakfast
+                  </p>
+                </div>
+
+                <Separator className="bg-gray-300" />
+
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Check-in:</span>
+                    <span className="text-blue-900">
+                      {new Date(bookingData.checkIn).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Check-out:</span>
+                    <span className="text-blue-900">
+                      {new Date(bookingData.checkOut).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Nights:</span>
+                    <span className="text-blue-900">{bookingData.nights}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Rooms:</span>
+                    <span className="text-blue-900">
+                      {bookingData.numberOfRooms}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Total Guests:</span>
+                    <span className="text-blue-900">
+                      {bookingData.totalGuests}
+                    </span>
+                  </div>
+                </div>
+
+                <Separator className="bg-gray-300" />
+
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Guest:</span>
+                    <span className="text-blue-900">
+                      {bookingData.guest.firstName}{' '}
+                      {bookingData.guest.lastName}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Email:</span>
+                    <span className="text-blue-900 text-xs">
+                      {bookingData.guest.email}
+                    </span>
+                  </div>
+                </div>
+
+                <Separator className="bg-gray-300" />
+
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">
+                      {bookingData.currency === 'KES' ? 'KES' : '$'}
+                      {bookingData.pricePerNight.toLocaleString()} ×{' '}
+                      {bookingData.nights} × {bookingData.numberOfRooms}
+                    </span>
+                    <span className="text-blue-900 font-medium">
+                      {bookingData.currency === 'KES' ? 'KES' : '$'}
+                      {bookingData.totalPrice.toLocaleString()}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between text-lg md:text-xl font-bold pt-2 border-t border-gray-300">
+                    <span className="text-blue-900">Total Amount:</span>
+                    <span className="text-blue-700">
+                      {bookingData.currency === 'KES' ? 'KES' : '$'}
+                      {bookingData.totalPrice.toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="pt-4">
+                  <div className="p-3 bg-green-100 border border-green-300 rounded">
+                    <p className="text-xs text-green-800">
+                      ✓ Free cancellation up to 48 hours before check-in
                     </p>
                   </div>
-
-                  <Separator className="bg-zinc-800" />
-
-                  <div className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Check-in:</span>
-                      <span className="text-white">
-                        {new Date(bookingData.checkIn).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Check-out:</span>
-                      <span className="text-white">
-                        {new Date(bookingData.checkOut).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Nights:</span>
-                      <span className="text-white">{bookingData.nights}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Rooms:</span>
-                      <span className="text-white">{bookingData.numberOfRooms}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Total Guests:</span>
-                      <span className="text-white">{bookingData.totalGuests}</span>
-                    </div>
-                  </div>
-
-                  <Separator className="bg-zinc-800" />
-
-                  <div className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Guest:</span>
-                      <span className="text-white">
-                        {bookingData.guest.firstName} {bookingData.guest.lastName}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Email:</span>
-                      <span className="text-white text-xs">
-                        {bookingData.guest.email}
-                      </span>
-                    </div>
-                  </div>
-
-                  <Separator className="bg-zinc-800" />
-
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-400">
-                        {bookingData.currency === 'KES' ? 'KES' : '$'}
-                        {bookingData.pricePerNight.toLocaleString()} × {bookingData.nights} ×{' '}
-                        {bookingData.numberOfRooms}
-                      </span>
-                      <span className="text-white">
-                        {bookingData.currency === 'KES' ? 'KES' : '$'}
-                        {bookingData.totalPrice.toLocaleString()}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-lg md:text-xl font-bold pt-2 border-t border-zinc-800">
-                      <span className="text-white">Total Amount:</span>
-                      <span className="text-amber-500">
-                        {bookingData.currency === 'KES' ? 'KES' : '$'}
-                        {bookingData.totalPrice.toLocaleString()}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="pt-4">
-                    <div className="p-3 bg-green-500/10 border border-green-500/30 rounded">
-                      <p className="text-xs text-green-400">
-                        ✓ Free cancellation up to 48 hours before check-in
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
-      </section>
-    </main>
-  );
+      </div>
+    </section>
+  </main>
+);
 }

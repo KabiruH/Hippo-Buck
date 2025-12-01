@@ -71,7 +71,7 @@ export function RoomCard({ room }: RoomCardProps) {
         };
       case 'OCCUPIED':
         return {
-          color: 'bg-orange-100 text-orange-700 border-orange-200',
+          color: 'bg-blue-100 text-blue-700 border-blue-200',
           icon: DoorOpen,
           label: 'Occupied',
         };
@@ -118,16 +118,16 @@ export function RoomCard({ room }: RoomCardProps) {
   const getAmenityIcon = (amenityName: string) => {
     const lowerName = amenityName.toLowerCase();
     if (lowerName.includes('wifi') || lowerName.includes('internet')) {
-      return <Wifi className="w-4 h-4" />;
+      return <Wifi className="w-4 h-4 text-blue-600" />;
     }
     if (lowerName.includes('tv') || lowerName.includes('television')) {
-      return <Tv className="w-4 h-4" />;
+      return <Tv className="w-4 h-4 text-blue-600" />;
     }
-    return <CheckCircle className="w-4 h-4" />;
+    return <CheckCircle className="w-4 h-4 text-blue-600" />;
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg hover:border-amber-300 transition-all duration-200">
+    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-200">
       <div className="grid md:grid-cols-3 gap-0">
         {/* Image Section */}
         <div className="relative h-64 md:h-auto">
@@ -138,8 +138,8 @@ export function RoomCard({ room }: RoomCardProps) {
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full bg-linear-to-br from-amber-100 to-amber-200 flex items-center justify-center">
-              <DoorOpen className="w-16 h-16 text-amber-600" />
+            <div className="w-full h-full bg-linear-to-br from-blue-100 to-blue-200 flex items-center justify-center">
+              <DoorOpen className="w-16 h-16 text-blue-600" />
             </div>
           )}
           {/* Status Badge Overlay */}
@@ -166,19 +166,19 @@ export function RoomCard({ room }: RoomCardProps) {
                   </span>
                 )}
               </div>
-              <p className="text-lg font-semibold text-amber-600">{room.roomType.name}</p>
+              <p className="text-lg font-semibold text-blue-600">{room.roomType.name}</p>
             </div>
             <div className="text-right">
               <p className="text-3xl font-bold text-gray-900">
                 {formatCurrency(room.roomType.basePrice)}
               </p>
-              <p className="text-sm text-gray-500">per night</p>
+              <p className="text-sm text-gray-600">per night</p>
             </div>
           </div>
 
           {/* Description */}
           {room.roomType.description && (
-            <p className="text-gray-600 text-sm mb-4">{room.roomType.description}</p>
+            <p className="text-gray-700 text-sm mb-4">{room.roomType.description}</p>
           )}
 
           {/* Current Booking Info */}
@@ -225,21 +225,21 @@ export function RoomCard({ room }: RoomCardProps) {
 
           {/* Room Details */}
           <div className="flex flex-wrap gap-4 mb-4">
-            <div className="flex items-center gap-2 text-gray-600">
-              <Users className="w-5 h-5 text-amber-600" />
+            <div className="flex items-center gap-2 text-gray-700">
+              <Users className="w-5 h-5 text-blue-600" />
               <span className="text-sm">
                 Up to {room.roomType.maxOccupancy} guest{room.roomType.maxOccupancy !== 1 ? 's' : ''}
               </span>
             </div>
             {room.roomType.bedType && (
-              <div className="flex items-center gap-2 text-gray-600">
-                <Bed className="w-5 h-5 text-amber-600" />
+              <div className="flex items-center gap-2 text-gray-700">
+                <Bed className="w-5 h-5 text-blue-600" />
                 <span className="text-sm">{room.roomType.bedType}</span>
               </div>
             )}
             {room.roomType.size && (
-              <div className="flex items-center gap-2 text-gray-600">
-                <DoorOpen className="w-5 h-5 text-amber-600" />
+              <div className="flex items-center gap-2 text-gray-700">
+                <DoorOpen className="w-5 h-5 text-blue-600" />
                 <span className="text-sm">{room.roomType.size}</span>
               </div>
             )}

@@ -22,12 +22,10 @@ export default function ImageLightbox({
 }: ImageLightboxProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
 
-  // Update current index when initialIndex changes
   useEffect(() => {
     setCurrentIndex(initialIndex);
   }, [initialIndex]);
 
-  // Handle keyboard navigation
   useEffect(() => {
     if (!isOpen) return;
 
@@ -38,7 +36,6 @@ export default function ImageLightbox({
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    // Prevent body scroll when modal is open
     document.body.style.overflow = 'hidden';
 
     return () => {
@@ -58,7 +55,7 @@ export default function ImageLightbox({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-100 bg-black/95 flex items-center justify-center">
+    <div className="fixed inset-0 z-100 bg-gray-900/90 flex items-center justify-center">
       {/* Close Button */}
       <Button
         onClick={onClose}
@@ -107,7 +104,7 @@ export default function ImageLightbox({
       </Button>
 
       {/* Image Counter */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 bg-black/60 backdrop-blur-sm px-4 py-2 rounded-full">
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 bg-gray-800/60 backdrop-blur-sm px-4 py-2 rounded-full">
         <p className="text-white text-sm md:text-base">
           {currentIndex + 1} / {images.length}
         </p>
@@ -121,7 +118,7 @@ export default function ImageLightbox({
             onClick={() => setCurrentIndex(index)}
             className={`relative shrink-0 w-16 h-16 lg:w-20 lg:h-20 rounded overflow-hidden transition-all ${
               index === currentIndex
-                ? 'ring-2 ring-amber-500 opacity-100'
+                ? 'ring-2 ring-blue-600 opacity-100'
                 : 'opacity-60 hover:opacity-100'
             }`}
           >

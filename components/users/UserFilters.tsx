@@ -22,39 +22,39 @@ export function UserFilters({
   onRoleChange,
   onStatusChange,
 }: UserFiltersProps) {
-  return (
-    <Card className="bg-zinc-900 border-zinc-800 mb-6">
-      <CardContent className="p-4">
-        <div className="flex flex-wrap gap-4">
-          <div className="flex-1 min-w-[200px]">
-            <Label className="text-white mb-2 block">Filter by Role</Label>
-            <Select value={filterRole} onValueChange={onRoleChange}>
-              <SelectTrigger className="bg-black border-zinc-700 text-white">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-zinc-900 border-zinc-700 text-white">
-                <SelectItem value="all">All Roles</SelectItem>
-                <SelectItem value="ADMIN">Admin</SelectItem>
-                <SelectItem value="MANAGER">Manager</SelectItem>
-                <SelectItem value="STAFF">Staff</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex-1 min-w-[200px]">
-            <Label className="text-white mb-2 block">Filter by Status</Label>
-            <Select value={filterStatus} onValueChange={onStatusChange}>
-              <SelectTrigger className="bg-black border-zinc-700 text-white">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-zinc-900 border-zinc-700 text-white">
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="true">Active</SelectItem>
-                <SelectItem value="false">Inactive</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+return (
+  <Card className="bg-white border-gray-200 mb-6 shadow-sm">
+    <CardContent className="p-4">
+      <div className="flex flex-wrap gap-4">
+        <div className="flex-1 min-w-[200px]">
+          <Label className="text-gray-700 mb-2 block">Filter by Role</Label>
+          <Select value={filterRole} onValueChange={onRoleChange}>
+            <SelectTrigger className="bg-gray-50 border-gray-300 text-gray-900">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-white border-gray-200 text-gray-900 shadow-lg">
+              <SelectItem value="all">All Roles</SelectItem>
+              <SelectItem value="ADMIN">Admin</SelectItem>
+              <SelectItem value="MANAGER">Manager</SelectItem>
+              <SelectItem value="STAFF">Staff</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-      </CardContent>
-    </Card>
-  );
+        <div className="flex-1 min-w-[200px]">
+          <Label className="text-gray-700 mb-2 block">Filter by Status</Label>
+          <Select value={filterStatus} onValueChange={onStatusChange}>
+            <SelectTrigger className="bg-gray-50 border-gray-300 text-gray-900">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-white border-gray-200 text-gray-900 shadow-lg">
+              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="true">Active</SelectItem>
+              <SelectItem value="false">Inactive</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    </CardContent>
+  </Card>
+);
 }

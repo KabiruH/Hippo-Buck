@@ -59,7 +59,7 @@ const navItems: NavItem[] = [
     title: 'Users',
     href: '/users',
     icon: Users,
-    roles: ['ADMIN'],
+    roles: ['ADMIN', 'MANAGER',],
   },
   {
     title: 'Bookings',

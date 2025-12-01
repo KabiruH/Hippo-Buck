@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Only admins can view all users
-    if (user!.role !== UserRole.ADMIN) {
+    if (user!.role !== UserRole.ADMIN && user!.role !== UserRole.MANAGER) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 403 }

@@ -99,138 +99,138 @@ export function CreateUserDialog({
     }
   };
 
-  return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button className="bg-amber-600 hover:bg-amber-700 text-white">
-          <UserPlus className="w-5 h-5 mr-2" />
-          Add New User
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="bg-zinc-900 border-zinc-800 text-white max-w-md max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">Create New User</DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleCreateUser} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+return (
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogTrigger asChild>
+          <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+            <UserPlus className="w-5 h-5 mr-2" />
+            Add New User
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="bg-white border-gray-200 text-gray-900 max-w-md max-h-[90vh] overflow-y-auto shadow-lg">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">Create New User</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleCreateUser} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="firstName" className="text-gray-700">First Name *</Label>
+                <Input
+                  id="firstName"
+                  value={newUser.firstName}
+                  onChange={(e) => setNewUser({ ...newUser, firstName: e.target.value })}
+                  className="bg-gray-50 border-gray-300 text-gray-900"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName" className="text-gray-700">Last Name *</Label>
+                <Input
+                  id="lastName"
+                  value={newUser.lastName}
+                  onChange={(e) => setNewUser({ ...newUser, lastName: e.target.value })}
+                  className="bg-gray-50 border-gray-300 text-gray-900"
+                  required
+                />
+              </div>
+            </div>
+
             <div className="space-y-2">
-              <Label htmlFor="firstName">First Name *</Label>
+              <Label htmlFor="email" className="text-gray-700">Email *</Label>
               <Input
-                id="firstName"
-                value={newUser.firstName}
-                onChange={(e) => setNewUser({ ...newUser, firstName: e.target.value })}
-                className="bg-black border-zinc-700 text-white"
+                id="email"
+                type="email"
+                value={newUser.email}
+                onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                className="bg-gray-50 border-gray-300 text-gray-900"
                 required
               />
             </div>
+
             <div className="space-y-2">
-              <Label htmlFor="lastName">Last Name *</Label>
+              <Label htmlFor="password" className="text-gray-700">Password *</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={newUser.password}
+                  onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                  className="bg-gray-50 border-gray-300 text-gray-900 pr-10"
+                  required
+                  minLength={8}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-900"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              <p className="text-xs text-gray-600">Minimum 8 characters</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="phone" className="text-gray-700">Phone (Optional)</Label>
               <Input
-                id="lastName"
-                value={newUser.lastName}
-                onChange={(e) => setNewUser({ ...newUser, lastName: e.target.value })}
-                className="bg-black border-zinc-700 text-white"
-                required
+                id="phone"
+                type="tel"
+                value={newUser.phone}
+                onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })}
+                className="bg-gray-50 border-gray-300 text-gray-900"
               />
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="email">Email *</Label>
-            <Input
-              id="email"
-              type="email"
-              value={newUser.email}
-              onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-              className="bg-black border-zinc-700 text-white"
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="password">Password *</Label>
-            <div className="relative">
-              <Input
-                id="password"
-                type={showPassword ? 'text' : 'password'}
-                value={newUser.password}
-                onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
-                className="bg-black border-zinc-700 text-white pr-10"
-                required
-                minLength={8}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+            <div className="space-y-2">
+              <Label htmlFor="role" className="text-gray-700">Role *</Label>
+              <Select
+                value={newUser.role}
+                onValueChange={(value) => setNewUser({ ...newUser, role: value })}
               >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
+                <SelectTrigger className="bg-gray-50 border-gray-300 text-gray-900">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-white border-gray-200 shadow-lg">
+                  <SelectItem value="STAFF">Staff</SelectItem>
+                  <SelectItem value="MANAGER">Manager</SelectItem>
+                  <SelectItem value="ADMIN">Admin</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            <p className="text-xs text-gray-400">Minimum 8 characters</p>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="phone">Phone (Optional)</Label>
-            <Input
-              id="phone"
-              type="tel"
-              value={newUser.phone}
-              onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })}
-              className="bg-black border-zinc-700 text-white"
-            />
-          </div>
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="isActive"
+                checked={newUser.isActive}
+                onChange={(e) => setNewUser({ ...newUser, isActive: e.target.checked })}
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <Label htmlFor="isActive" className="text-sm text-gray-700">
+                Activate account immediately
+              </Label>
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="role">Role *</Label>
-            <Select
-              value={newUser.role}
-              onValueChange={(value) => setNewUser({ ...newUser, role: value })}
-            >
-              <SelectTrigger className="bg-black border-zinc-700 text-white">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-zinc-900 border-zinc-700">
-                <SelectItem value="STAFF">Staff</SelectItem>
-                <SelectItem value="MANAGER">Manager</SelectItem>
-                <SelectItem value="ADMIN">Admin</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              id="isActive"
-              checked={newUser.isActive}
-              onChange={(e) => setNewUser({ ...newUser, isActive: e.target.checked })}
-              className="w-4 h-4"
-            />
-            <Label htmlFor="isActive" className="text-sm">
-              Activate account immediately
-            </Label>
-          </div>
-
-          <div className="flex gap-3 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsOpen(false)}
-              className="flex-1 border-zinc-700 text-white hover:bg-zinc-800"
-              disabled={formLoading}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              className="flex-1 bg-amber-600 hover:bg-amber-700 text-white"
-              disabled={formLoading}
-            >
-              {formLoading ? 'Creating...' : 'Create User'}
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
+            <div className="flex gap-3 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsOpen(false)}
+                className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-100 bg-white"
+                disabled={formLoading}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                disabled={formLoading}
+              >
+                {formLoading ? 'Creating...' : 'Create User'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+    );
 }

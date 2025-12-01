@@ -86,12 +86,28 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
         message: 'Login successful! Redirecting...',
       });
 
-      // Redirect to dashboard after a short delay
+      // Determine redirect path based on user role
+      let redirectPath = '/dashboard'; // Default path
+
+      if (data.user && data.user.role) {
+        const userRole = data.user.role.toUpperCase();
+
+        if (userRole === 'ADMIN') {
+          redirectPath = '/dashboard';
+        } else if (userRole === 'MANAGER' || userRole === 'STAFF' || userRole === 'HOUSEKEEPING') {
+          redirectPath = '/bookings';
+        } else {
+          // Fallback for any other roles
+          redirectPath = '/bookings';
+        }
+      }
+
+      // Redirect after a short delay
       setTimeout(() => {
         if (onSuccess) {
           onSuccess();
         }
-        router.push('/dashboard');
+        router.push(redirectPath);
       }, 1500);
     } catch (error) {
       setAlert({
@@ -138,9 +154,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
             value={formData.email}
             onChange={(e) => handleChange('email', e.target.value)}
             disabled={isLoading}
-            className={`pl-10 bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus-visible:ring-blue-500 ${
-              errors.email ? 'border-red-500' : ''
-            }`}
+            className={`pl-10 bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus-visible:ring-blue-500 ${errors.email ? 'border-red-500' : ''
+              }`}
           />
         </div>
         {errors.email && <p className="text-sm text-red-400">{errors.email}</p>}
@@ -160,9 +175,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
             value={formData.password}
             onChange={(e) => handleChange('password', e.target.value)}
             disabled={isLoading}
-            className={`pl-10 bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus-visible:ring-blue-500 ${
-              errors.password ? 'border-red-500' : ''
-            }`}
+            className={`pl-10 bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus-visible:ring-blue-500 ${errors.password ? 'border-red-500' : ''
+              }`}
           />
         </div>
         {errors.password && (
@@ -185,7 +199,6 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
             Remember me
           </Label>
         </div>
-
         <a
           href="#"
           className="text-sm font-medium text-blue-500 hover:text-blue-400 transition-colors"

@@ -36,85 +36,82 @@ export function UserCard({ user, onApprove, onReject, isLoading }: UserCardProps
 
   const userName = `${user.firstName} ${user.lastName}`;
 
-  return (
-    <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg hover:border-amber-300 transition-all duration-200">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        {/* User Info */}
-        <div className="flex-1 space-y-3">
-          <div className="flex items-center gap-3 flex-wrap">
-            {/* Avatar */}
-            <div className="w-12 h-12 rounded-full bg-linear-to-br from-amber-400 to-amber-600 flex items-center justify-center shrink-0">
-              <span className="text-white font-bold text-lg">
-                {user.firstName[0]}{user.lastName[0]}
-              </span>
-            </div>
-
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-xl font-bold text-gray-900">{userName}</h3>
-                <span
-                  className={`px-3 py-1 text-xs font-medium rounded-full border ${getRoleBadgeColor(user.role)}`}
-                >
-                  {user.role}
-                </span>
-                {user.isActive ? (
-                  <span className="px-3 py-1 text-xs font-medium bg-green-100 text-green-700 rounded-full border border-green-200">
-                    Active
-                  </span>
-                ) : (
-                  <span className="px-3 py-1 text-xs font-medium bg-orange-100 text-orange-700 rounded-full border border-orange-200">
-                    Pending Approval
-                  </span>
-                )}
-              </div>
-            </div>
+return (
+  <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg hover:border-blue-300 transition-all duration-200">
+    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* User Info */}
+      <div className="flex-1 space-y-3">
+        <div className="flex items-center gap-3 flex-wrap">
+          {/* Avatar */}
+          <div className="w-12 h-12 rounded-full bg-linear-to-br from-blue-400 to-blue-600 flex items-center justify-center shrink-0">
+            <span className="text-white font-bold text-lg">
+              {user.firstName[0]}{user.lastName[0]}
+            </span>
           </div>
-
-          <div className="flex flex-col gap-2 text-sm text-gray-600 ml-15">
-            <div className="flex items-center gap-2">
-              <Mail className="w-4 h-4 text-amber-600" />
-              <span className="font-medium">{user.email}</span>
-            </div>
-            {user.phone && (
-              <div className="flex items-center gap-2">
-                <Phone className="w-4 h-4 text-amber-600" />
-                <span>{user.phone}</span>
-              </div>
-            )}
-            <div className="text-xs text-gray-500">
-              Joined:{' '}
-              {new Date(user.createdAt).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-              })}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-xl font-bold text-gray-900">{userName}</h3>
+              <span
+                className={`px-3 py-1 text-xs font-medium rounded-full border ${getRoleBadgeColor(user.role)}`}
+              >
+                {user.role}
+              </span>
+              {user.isActive ? (
+                <span className="px-3 py-1 text-xs font-medium bg-green-100 text-green-700 rounded-full border border-green-200">
+                  Active
+                </span>
+              ) : (
+                <span className="px-3 py-1 text-xs font-medium bg-orange-100 text-orange-700 rounded-full border border-orange-200">
+                  Pending Approval
+                </span>
+              )}
             </div>
           </div>
         </div>
-
-        {/* Action Buttons - Only show for inactive users */}
-        {!user.isActive && (
-          <div className="flex gap-3 md:flex-col lg:flex-row">
-            <Button
-              onClick={() => onApprove(user.id, userName)}
-              disabled={isLoading}
-              className="bg-green-600 hover:bg-green-700 text-white shadow-sm"
-            >
-              <CheckCircle className="w-4 h-4 mr-2" />
-              Approve
-            </Button>
-            <Button
-              onClick={() => onReject(user.id, userName)}
-              disabled={isLoading}
-              variant="destructive"
-              className="bg-red-600 hover:bg-red-700 shadow-sm"
-            >
-              <XCircle className="w-4 h-4 mr-2" />
-              Reject
-            </Button>
+        <div className="flex flex-col gap-2 text-sm text-gray-600 ml-15">
+          <div className="flex items-center gap-2">
+            <Mail className="w-4 h-4 text-blue-600" />
+            <span className="font-medium">{user.email}</span>
           </div>
-        )}
+          {user.phone && (
+            <div className="flex items-center gap-2">
+              <Phone className="w-4 h-4 text-blue-600" />
+              <span>{user.phone}</span>
+            </div>
+          )}
+          <div className="text-xs text-gray-500">
+            Joined:{' '}
+            {new Date(user.createdAt).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+            })}
+          </div>
+        </div>
       </div>
+      {/* Action Buttons - Only show for inactive users */}
+      {!user.isActive && (
+        <div className="flex gap-3 md:flex-col lg:flex-row">
+          <Button
+            onClick={() => onApprove(user.id, userName)}
+            disabled={isLoading}
+            className="bg-green-600 hover:bg-green-700 text-white shadow-sm"
+          >
+            <CheckCircle className="w-4 h-4 mr-2" />
+            Approve
+          </Button>
+          <Button
+            onClick={() => onReject(user.id, userName)}
+            disabled={isLoading}
+            variant="destructive"
+            className="bg-red-600 hover:bg-red-700 shadow-sm"
+          >
+            <XCircle className="w-4 h-4 mr-2" />
+            Reject
+          </Button>
+        </div>
+      )}
     </div>
-  );
+  </div>
+);
 }

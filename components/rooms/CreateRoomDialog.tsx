@@ -52,6 +52,7 @@ export function CreateRoomDialog({
   const [formLoading, setFormLoading] = useState(false);
   const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
   const [loadingRoomTypes, setLoadingRoomTypes] = useState(false);
+    const [user, setUser] = useState<{ role: string } | null>(null);
 
   const [newRoom, setNewRoom] = useState<NewRoomForm>({
     roomNumber: '',
@@ -71,7 +72,7 @@ export function CreateRoomDialog({
     setLoadingRoomTypes(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/room-types', {
+      const response = await fetch('/api/rooms/room-types', {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -88,6 +89,14 @@ export function CreateRoomDialog({
       setLoadingRoomTypes(false);
     }
   };
+
+  useEffect(() => {
+    // Get user from localStorage when component mounts
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
 
   const handleCreateRoom = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -152,129 +161,132 @@ export function CreateRoomDialog({
 
   const selectedRoomType = roomTypes.find((rt) => rt.id === newRoom.roomTypeId);
 
-  return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button className="bg-amber-600 hover:bg-amber-700 text-white">
-          <Plus className="w-5 h-5 mr-2" />
-          Add New Room
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="bg-white border-gray-200 text-gray-900 max-w-md max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">Create New Room</DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleCreateRoom} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="roomNumber">Room Number *</Label>
-            <Input
-              id="roomNumber"
-              value={newRoom.roomNumber}
-              onChange={(e) => setNewRoom({ ...newRoom, roomNumber: e.target.value })}
-              className="bg-white border-gray-300 text-gray-900"
-              placeholder="e.g., 101, A-201"
-              required
-            />
-          </div>
+return (
+  <Dialog open={isOpen} onOpenChange={setIsOpen}>
+  <DialogTrigger asChild disabled={user?.role !== 'ADMIN' && user?.role !== 'MANAGER'}>
+  <Button 
+    className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+    disabled={user?.role !== 'ADMIN' && user?.role !== 'MANAGER'}
+  >
+    <Plus className="w-5 h-5 mr-2" />
+    Add New Room
+  </Button>
+</DialogTrigger>
+    <DialogContent className="bg-white border border-gray-200 text-gray-900 shadow-lg max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogHeader>
+        <DialogTitle className="text-2xl font-bold text-blue-600">Create New Room</DialogTitle>
+      </DialogHeader>
+      <form onSubmit={handleCreateRoom} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="roomNumber" className="text-blue-600">Room Number *</Label>
+          <Input
+            id="roomNumber"
+            value={newRoom.roomNumber}
+            onChange={(e) => setNewRoom({ ...newRoom, roomNumber: e.target.value })}
+            className="bg-gray-50 border border-blue-600 text-gray-900 placeholder-gray-400"
+            placeholder="e.g., 101, A-201"
+            required
+          />
+        </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="roomType">Room Type *</Label>
-            {loadingRoomTypes ? (
-              <div className="flex items-center justify-center py-4">
-                <Loader2 className="w-5 h-5 animate-spin text-amber-600" />
-              </div>
-            ) : (
-              <Select
-                value={newRoom.roomTypeId}
-                onValueChange={(value) => setNewRoom({ ...newRoom, roomTypeId: value })}
-              >
-                <SelectTrigger className="bg-white border-gray-300 text-gray-900">
-                  <SelectValue placeholder="Select room type" />
-                </SelectTrigger>
-                <SelectContent className="bg-white border-gray-300">
-                  {roomTypes.map((type) => (
-                    <SelectItem key={type.id} value={type.id}>
-                      {type.name} - {formatCurrency(type.basePrice)}/night
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-            {selectedRoomType && (
-              <p className="text-xs text-gray-600">
-                Capacity: {selectedRoomType.capacity} guest{selectedRoomType.capacity !== 1 ? 's' : ''}
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="floor">Floor (Optional)</Label>
-            <Input
-              id="floor"
-              type="number"
-              value={newRoom.floor}
-              onChange={(e) => setNewRoom({ ...newRoom, floor: e.target.value })}
-              className="bg-white border-gray-300 text-gray-900"
-              placeholder="e.g., 1, 2, 3"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="status">Initial Status *</Label>
+        <div className="space-y-2">
+          <Label htmlFor="roomType" className="text-blue-600">Room Type *</Label>
+          {loadingRoomTypes ? (
+            <div className="flex items-center justify-center py-4">
+              <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+            </div>
+          ) : (
             <Select
-              value={newRoom.status}
-              onValueChange={(value) => setNewRoom({ ...newRoom, status: value })}
+              value={newRoom.roomTypeId}
+              onValueChange={(value) => setNewRoom({ ...newRoom, roomTypeId: value })}
             >
-              <SelectTrigger className="bg-white border-gray-300 text-gray-900">
-                <SelectValue />
+              <SelectTrigger className="bg-gray-50 border border-blue-600 text-gray-900">
+                <SelectValue placeholder="Select room type" />
               </SelectTrigger>
-              <SelectContent className="bg-white border-gray-300">
-                <SelectItem value="AVAILABLE">Available</SelectItem>
-                <SelectItem value="MAINTENANCE">Maintenance</SelectItem>
-                <SelectItem value="RESERVED">Reserved</SelectItem>
+              <SelectContent className="bg-white border border-gray-200 text-gray-900">
+                {roomTypes.map((type) => (
+                  <SelectItem key={type.id} value={type.id} className="text-gray-900">
+                    {type.name} - {formatCurrency(type.basePrice)}/night
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
-          </div>
+          )}
+          {selectedRoomType && (
+            <p className="text-xs text-gray-700">
+              Capacity: {selectedRoomType.capacity} guest{selectedRoomType.capacity !== 1 ? 's' : ''}
+            </p>
+          )}
+        </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Description (Optional)</Label>
-            <Textarea
-              id="description"
-              value={newRoom.description}
-              onChange={(e) => setNewRoom({ ...newRoom, description: e.target.value })}
-              className="bg-white border-gray-300 text-gray-900"
-              rows={3}
-              placeholder="Any special notes about this room..."
-            />
-          </div>
+        <div className="space-y-2">
+          <Label htmlFor="floor" className="text-blue-600">Floor (Optional)</Label>
+          <Input
+            id="floor"
+            type="number"
+            value={newRoom.floor}
+            onChange={(e) => setNewRoom({ ...newRoom, floor: e.target.value })}
+            className="bg-gray-50 border border-blue-600 text-gray-900 placeholder-gray-400"
+            placeholder="e.g., 1, 2, 3"
+          />
+        </div>
 
-          <div className="flex gap-3 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsOpen(false)}
-              className="flex-1 border-gray-300 hover:bg-gray-50"
-              disabled={formLoading}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              className="flex-1 bg-amber-600 hover:bg-amber-700 text-white"
-              disabled={formLoading || loadingRoomTypes}
-            >
-              {formLoading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Creating...
-                </>
-              ) : (
-                'Create Room'
-              )}
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
+        <div className="space-y-2">
+          <Label htmlFor="status" className="text-blue-600">Initial Status *</Label>
+          <Select
+            value={newRoom.status}
+            onValueChange={(value) => setNewRoom({ ...newRoom, status: value })}
+          >
+            <SelectTrigger className="bg-gray-50 border border-blue-600 text-gray-900">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-white border border-gray-200 text-gray-900">
+              <SelectItem value="AVAILABLE">Available</SelectItem>
+              <SelectItem value="MAINTENANCE">Maintenance</SelectItem>
+              <SelectItem value="RESERVED">Reserved</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="description" className="text-blue-600">Description (Optional)</Label>
+          <Textarea
+            id="description"
+            value={newRoom.description}
+            onChange={(e) => setNewRoom({ ...newRoom, description: e.target.value })}
+            className="bg-gray-50 border border-blue-600 text-gray-900 placeholder-gray-400"
+            rows={3}
+            placeholder="Any special notes about this room..."
+          />
+        </div>
+
+        <div className="flex gap-3 pt-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setIsOpen(false)}
+            className="flex-1 border border-blue-600 text-blue-600 hover:bg-blue-50"
+            disabled={formLoading}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+            disabled={formLoading || loadingRoomTypes}
+          >
+            {formLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              'Create Room'
+            )}
+          </Button>
+        </div>
+      </form>
+    </DialogContent>
+  </Dialog>
+);
 }

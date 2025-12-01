@@ -154,6 +154,134 @@ export async function GET(request: NextRequest) {
   }
 }
 
+// Create a new room (POST function)
+export async function POST(request: NextRequest) {
+  try {
+    const { user, error } = await authenticateUser(request);
+
+    if (error) {
+      return error;
+    }
+
+    // Check if user is ADMIN or MANAGER
+    if (user!.role !== 'ADMIN' && user!.role !== 'MANAGER') {
+      return NextResponse.json(
+        { error: 'Unauthorized. Only admins and managers can create rooms.' },
+        { status: 403 }
+      );
+    }
+
+    const body = await request.json();
+    const { roomNumber, roomTypeId, floor, status, description } = body;
+
+    // Validation
+    if (!roomNumber || !roomTypeId) {
+      return NextResponse.json(
+        { error: 'Room number and room type are required' },
+        { status: 400 }
+      );
+    }
+
+    // Validate status
+    const validStatuses = Object.values(RoomStatus);
+    if (status && !validStatuses.includes(status)) {
+      return NextResponse.json(
+        { error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` },
+        { status: 400 }
+      );
+    }
+
+    // Check if room number already exists
+    const existingRoom = await prisma.room.findFirst({
+      where: { roomNumber },
+    });
+
+    if (existingRoom) {
+      return NextResponse.json(
+        { error: `Room ${roomNumber} already exists` },
+        { status: 400 }
+      );
+    }
+
+    // Check if room type exists
+    const roomType = await prisma.roomType.findUnique({
+      where: { id: roomTypeId },
+    });
+
+    if (!roomType) {
+      return NextResponse.json(
+        { error: 'Invalid room type' },
+        { status: 400 }
+      );
+    }
+
+    // Create the room
+    const newRoom = await prisma.room.create({
+      data: {
+        roomNumber,
+        roomTypeId,
+        floor: floor || 1,
+        status: status || RoomStatus.AVAILABLE,
+        notes: description || null, // Changed from description to notes
+      },
+      include: {
+        roomType: {
+          include: {
+            amenities: true,
+            images: {
+              where: {
+                isPrimary: true,
+              },
+              take: 1,
+            },
+          },
+        },
+      },
+    });
+
+    // Log activity
+    await prisma.activityLog.create({
+      data: {
+        userId: user!.userId,
+        action: 'ROOM_CREATED',
+        entityType: 'Room',
+        entityId: newRoom.id,
+        details: JSON.stringify({
+          roomNumber: newRoom.roomNumber,
+          roomType: roomType.name,
+          floor: newRoom.floor,
+          status: newRoom.status,
+        }),
+      },
+    });
+
+    return NextResponse.json(
+      {
+        message: 'Room created successfully',
+        room: {
+          id: newRoom.id,
+          roomNumber: newRoom.roomNumber,
+          floor: newRoom.floor,
+          status: newRoom.status,
+          notes: newRoom.notes, // Changed from description to notes
+          roomType: {
+            id: newRoom.roomType.id,
+            name: newRoom.roomType.name,
+            basePrice: Number(newRoom.roomType.basePrice),
+          },
+        },
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error('Create room error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
 // Update room status (for admin use)
 export async function PATCH(request: NextRequest) {
   try {
