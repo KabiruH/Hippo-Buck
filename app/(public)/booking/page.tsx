@@ -277,7 +277,7 @@ function BookingContent() {
       <section className="relative h-[40vh] md:h-[50vh] w-full overflow-hidden">
         <div className="absolute inset-0">
           <Image
-            src="/1.jpg"
+            src="/f.jpg"
             alt="Book Your Stay"
             fill
             className="object-cover"

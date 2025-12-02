@@ -59,7 +59,7 @@ export default function AboutPage() {
       <section className="relative h-[70vh] w-full overflow-hidden">
         <div className="absolute inset-0">
           <Image
-            src="/6.jpg"
+            src="/d.jpg"
             alt="Hotel Hippo Buck - About Us"
             fill
             className="object-cover"
@@ -125,7 +125,7 @@ export default function AboutPage() {
             {/* Image */}
             <div className="relative h-[600px] rounded-lg overflow-hidden">
               <Image
-                src="/2.jpg"
+                src="/e.jpg"
                 alt="Hotel Hippo Buck Interior"
                 fill
                 className="object-cover"
@@ -220,7 +220,7 @@ export default function AboutPage() {
             {/* Image */}
             <div className="relative h-[500px] rounded-lg overflow-hidden order-2 lg:order-1">
               <Image
-                src="/5.jpg"
+                src="/g.jpg"
                 alt="Lake Victoria Sunset"
                 fill
                 className="object-cover"

@@ -12,7 +12,7 @@ export default function RoomsPage() {
       <section className="relative h-[50vh] md:h-[60vh] w-full overflow-hidden">
         <div className="absolute inset-0">
           <Image
-            src="/3.jpg"
+            src="/i.jpg"
             alt="Hotel Hippo Buck Rooms"
             fill
             className="object-cover"
@@ -24,7 +24,7 @@ export default function RoomsPage() {
 
         <div className="relative h-full flex flex-col items-center justify-center text-center px-4">
           <div className="max-w-4xl mx-auto space-y-3 md:space-y-4">
-            <p className="text-blue-600 text-xs md:text-sm tracking-widest uppercase">
+            <p className="text-white text-xs md:text-sm tracking-widest uppercase">
               Choose Your Perfect Stay
             </p>
             <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white tracking-wide">

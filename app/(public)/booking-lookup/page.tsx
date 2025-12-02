@@ -169,7 +169,7 @@ export default function BookingLookupPage() {
       <section className="relative h-[40vh] w-full overflow-hidden">
         <div className="absolute inset-0">
           <Image
-            src="/1.jpg"
+            src="/a.jpg"
             alt="Find Your Booking"
             fill
             className="object-cover"

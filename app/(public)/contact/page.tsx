@@ -5,19 +5,33 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
+import Image from 'next/image';
 
 export default function ContactPage() {
   return (
-    <main className="min-h-screen bg-gray-50 pt-24">
+    <main className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <section className="relative py-20 bg-linear-to-br from-blue-100 to-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-            Get In <span className="text-blue-600">Touch</span>
-          </h1>
-          <p className="text-xl text-gray-700 max-w-2xl mx-auto">
-            We'd love to hear from you. Reach out to us for reservations, inquiries, or any questions about your stay.
-          </p>
+      <section className="relative h-[50vh] md:h-[60vh] w-full overflow-hidden">
+        <div className="absolute inset-0">
+          <Image
+            src="/f.jpg"
+            alt="Hotel Hippo Buck Contact"
+            fill
+            className="object-cover"
+            priority
+          />
+          {/* Dark overlay */}
+          <div className="absolute inset-0 bg-black/40" />
+        </div>
+        <div className="relative h-full flex flex-col items-center justify-center text-center px-4">
+          <div className="max-w-4xl mx-auto space-y-3 md:space-y-4">
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white tracking-wide">
+              Get In <span className="text-blue-400">Touch</span>
+            </h1>
+            <p className="text-base md:text-xl text-white/90 max-w-2xl mx-auto">
+              We'd love to hear from you. Reach out to us for reservations, inquiries, or any questions about your stay.
+            </p>
+          </div>
         </div>
       </section>
 

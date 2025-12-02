@@ -3,7 +3,7 @@ export const roomsData = [
     id: 'standard',
     name: 'Standard Room',
     description: 'Comfortable accommodation with all essential amenities for a pleasant stay',
-    images: ['/1.jpg', '/2.jpg', '/3.jpg', '/4.jpg', '/5.jpg'],
+    images: ['/1a.jpg', '/1b.jpg', '/1c.jpg', '/1d.jpg', '/1e.jpg'],
     pricing: {
       eastAfrican: {
         single: 3000,
@@ -35,7 +35,7 @@ export const roomsData = [
     id: 'superior-pool',
     name: 'Superior Room (Pool View)',
     description: 'Enhanced comfort with stunning views of our swimming pool',
-    images: ['/2.jpg', '/3.jpg', '/4.jpg', '/5.jpg', '/6.jpg'],
+    images: ['/7.jpg', '/8.jpg', '/8a.jpg', '/9.jpg', '/9a.jpg'],
     pricing: {
       eastAfrican: {
         single: 5000,
@@ -71,7 +71,7 @@ export const roomsData = [
     id: 'superior-garden',
     name: 'Superior Room (Garden View)',
     description: 'Premium luxury with serene views of our landscaped gardens',
-    images: ['/3.jpg', '/4.jpg', '/5.jpg', '/6.jpg', '/1.jpg'],
+    images: ['/2.jpg', '/3.jpg', '/4.jpg', '/5.jpg', '/6.jpg'],
     pricing: {
       eastAfrican: {
         single: 6500,
