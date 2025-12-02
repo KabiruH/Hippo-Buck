@@ -51,7 +51,7 @@ export default function WelcomeSection() {
           {/* Image */}
           <div className="relative h-[500px] rounded-lg overflow-hidden">
             <Image
-              src="/2.jpg"
+              src="/j.jpg"
               alt="Hotel Hippo Buck - Lake Victoria View Homa Bay"
               fill
               className="object-cover"
