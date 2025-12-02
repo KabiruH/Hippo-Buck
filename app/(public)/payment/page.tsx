@@ -15,8 +15,11 @@ import {
   CheckCircle2,
   AlertCircle,
   ArrowLeft,
+  Check,
+  Copy,
 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface BookingData {
   room: string;
@@ -52,6 +55,11 @@ export default function PaymentPage() {
 
   // M-Pesa form data
   const [mpesaPhone, setMpesaPhone] = useState('');
+  const [showMpesaModal, setShowMpesaModal] = useState(false);
+  const [mpesaCode, setMpesaCode] = useState('');
+  const [copiedTill, setCopiedTill] = useState(false);
+  const [copiedPaybill, setCopiedPaybill] = useState(false);
+  const [copiedAccount, setCopiedAccount] = useState(false);
 
   // Card form data
   const [cardNumber, setCardNumber] = useState('');
@@ -73,21 +81,28 @@ export default function PaymentPage() {
     }
   }, [router]);
 
-  const handleMpesaPayment = async (e: React.FormEvent) => {
+ const handleMpesaPayment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPaymentError('');
+    
+    // Open modal to show payment instructions
+    setShowMpesaModal(true);
+  };
+
+  const handleMpesaCodeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
     setPaymentError('');
 
     try {
-      // TODO: Integrate with M-Pesa Daraja API
-      // This is a placeholder - you'll need to implement the actual API calls
-      
-      const response = await fetch('/api/payment/mpesa', {
+      // Submit M-Pesa code for verification
+      const response = await fetch('/api/payment/mpesa-verify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          mpesaCode,
           phone: mpesaPhone,
           amount: bookingData?.totalPrice,
           bookingData,
@@ -96,19 +111,45 @@ export default function PaymentPage() {
 
       if (response.ok) {
         const data = await response.json();
-        // Show success and redirect
         setPaymentSuccess(true);
+        setShowMpesaModal(false);
+        
+        // Store booking confirmation data
+        sessionStorage.setItem('bookingConfirmation', JSON.stringify({
+          ...bookingData,
+          mpesaCode,
+          paymentMethod: 'mpesa',
+          bookingReference: data.bookingReference,
+          paymentStatus: 'pending_verification',
+        }));
+        
         setTimeout(() => {
           router.push('/booking-confirmation');
-        }, 3000);
+        }, 2000);
       } else {
-        throw new Error('Payment failed');
+        const error = await response.json();
+        throw new Error(error.message || 'Payment verification failed');
       }
-    } catch (error) {
-      setPaymentError('M-Pesa payment failed. Please try again.');
-      console.error('M-Pesa payment error:', error);
+    } catch (error: any) {
+      setPaymentError(error.message || 'Failed to verify payment. Please contact support.');
+      console.error('M-Pesa verification error:', error);
     } finally {
       setIsProcessing(false);
+    }
+  };
+
+  const copyToClipboard = (text: string, type: 'till' | 'paybill' | 'account') => {
+    navigator.clipboard.writeText(text);
+    
+    if (type === 'till') {
+      setCopiedTill(true);
+      setTimeout(() => setCopiedTill(false), 2000);
+    } else if (type === 'paybill') {
+      setCopiedPaybill(true);
+      setTimeout(() => setCopiedPaybill(false), 2000);
+    } else {
+      setCopiedAccount(true);
+      setTimeout(() => setCopiedAccount(false), 2000);
     }
   };
 
@@ -208,6 +249,8 @@ export default function PaymentPage() {
     );
   }
 
+  
+
 return (
   <main className="min-h-screen bg-gray-50">
     {/* Hero Section */}
@@ -248,23 +291,22 @@ return (
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Booking
         </Button>
-
-        <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
-          {/* Payment Form */}
-          <div className="lg:col-span-2">
-            <Card className="bg-white border border-gray-200 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-xl md:text-2xl text-blue-800">
-                  Choose Payment Method
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Tabs
-                  value={paymentMethod}
-                  onValueChange={(value) =>
-                    setPaymentMethod(value as 'mpesa' | 'card')
-                  }
-                  className="w-full"
+      
+          <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
+            <div className="lg:col-span-2">
+              <Card className="bg-white border border-gray-200 shadow-sm">
+                <CardHeader>
+                  <CardTitle className="text-xl md:text-2xl text-blue-800">
+                    Choose Payment Method
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Tabs
+                    value={paymentMethod}
+                    onValueChange={(value) =>
+                      setPaymentMethod(value as 'mpesa' | 'card')
+                    }
+                    className="w-full"
                 >
                   <TabsList className="grid w-full grid-cols-2 bg-gray-200">
                     <TabsTrigger
@@ -284,76 +326,71 @@ return (
                   </TabsList>
 
                   {/* M-Pesa Payment */}
-                  <TabsContent value="mpesa" className="mt-6">
-                    <form onSubmit={handleMpesaPayment} className="space-y-6">
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-3 p-4 bg-blue-100 border border-blue-300 rounded-lg">
-                          <Smartphone className="w-8 h-8 text-blue-600" />
-                          <div>
-                            <h3 className="text-blue-800 font-semibold text-sm md:text-base">
-                              M-Pesa Payment
-                            </h3>
-                            <p className="text-blue-700/70 text-xs md:text-sm">
-                              You'll receive a payment prompt on your phone
+                       <TabsContent value="mpesa" className="mt-6">
+                      <form onSubmit={handleMpesaPayment} className="space-y-6">
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
+                            <Smartphone className="w-8 h-8 text-green-600" />
+                            <div>
+                              <h3 className="text-green-800 font-semibold text-sm md:text-base">
+                                M-Pesa Payment
+                              </h3>
+                              <p className="text-green-700/70 text-xs md:text-sm">
+                                Pay via Till Number or Paybill
+                              </p>
+                            </div>
+                          </div>
+
+    <div className="space-y-2">
+                            <Label htmlFor="mpesaPhone" className="text-blue-900">
+                              Your M-Pesa Phone Number
+                            </Label>
+                            <Input
+                              id="mpesaPhone"
+                              type="tel"
+                              placeholder="254712345678"
+                              value={mpesaPhone}
+                              onChange={(e) => setMpesaPhone(e.target.value)}
+                              className="bg-white border-gray-300 text-blue-900 text-lg"
+                              required
+                            />
+                            <p className="text-xs text-blue-600/70">
+                              Enter the phone number you'll use to make the payment
                             </p>
+                          </div>
+
+                       <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                            <h4 className="text-blue-900 font-semibold mb-3 text-sm">
+                              How to Pay:
+                            </h4>
+                            <ol className="space-y-2 text-blue-700 text-xs md:text-sm">
+                              <li>1. Click "Proceed to Payment"</li>
+                              <li>2. You'll see our Till Number and Paybill details</li>
+                              <li>3. Send the exact amount via M-Pesa</li>
+                              <li>4. Enter your M-Pesa confirmation code</li>
+                              <li>5. We'll verify and confirm your booking</li>
+                            </ol>
                           </div>
                         </div>
 
-                        <div className="space-y-2">
-                          <Label htmlFor="mpesaPhone" className="text-blue-900">
-                            M-Pesa Phone Number
-                          </Label>
-                          <Input
-                            id="mpesaPhone"
-                            type="tel"
-                            placeholder="254712345678"
-                            value={mpesaPhone}
-                            onChange={(e) => setMpesaPhone(e.target.value)}
-                            className="bg-white border-gray-300 text-blue-900 text-lg"
-                            required
-                          />
-                          <p className="text-xs text-blue-600/70">
-                            Enter your Safaricom number (format: 254XXXXXXXXX)
-                          </p>
-                        </div>
-
-                        <div className="p-4 bg-gray-100 rounded-lg border border-gray-300">
-                          <h4 className="text-blue-900 font-semibold mb-3 text-sm">
-                            How it works:
-                          </h4>
-                          <ol className="space-y-2 text-blue-700 text-xs md:text-sm">
-                            <li>1. Click “Pay with M-Pesa”</li>
-                            <li>2. Enter your M-Pesa PIN on your phone</li>
-                            <li>3. Confirm the payment</li>
-                            <li>4. You'll receive an SMS confirmation</li>
-                          </ol>
-                        </div>
-                      </div>
-
-                      {paymentError && (
-                        <div className="flex items-center gap-2 p-4 bg-red-100 border border-red-300 rounded-lg">
-                          <AlertCircle className="w-5 h-5 text-red-600" />
-                          <p className="text-red-600 text-sm">{paymentError}</p>
-                        </div>
-                      )}
-
-                      <Button
-                        type="submit"
-                        size="lg"
-                        className="w-full bg-green-600 hover:bg-green-700 text-white"
-                        disabled={isProcessing || !mpesaPhone}
-                      >
-                        {isProcessing ? (
-                          <>Processing...</>
-                        ) : (
-                          <>
-                            <Smartphone className="w-5 h-5 mr-2" />
-                            Pay with M-Pesa
-                          </>
+{paymentError && (
+                          <div className="flex items-center gap-2 p-4 bg-red-100 border border-red-300 rounded-lg">
+                            <AlertCircle className="w-5 h-5 text-red-600" />
+                            <p className="text-red-600 text-sm">{paymentError}</p>
+                          </div>
                         )}
-                      </Button>
-                    </form>
-                  </TabsContent>
+
+                       <Button
+                          type="submit"
+                          size="lg"
+                          className="w-full bg-green-600 hover:bg-green-700 text-white"
+                          disabled={!mpesaPhone}
+                        >
+                          <Smartphone className="w-5 h-5 mr-2" />
+                          Proceed to Payment
+                        </Button>
+                      </form>
+                    </TabsContent>
 
                   {/* Card Payment */}
                   <TabsContent value="card" className="mt-6">
@@ -609,6 +646,178 @@ return (
         </div>
       </div>
     </section>
+
+       {/* M-Pesa Payment Modal */}
+      <Dialog open={showMpesaModal} onOpenChange={setShowMpesaModal}>
+        <DialogContent className="sm:max-w-md bg-white">
+          <DialogHeader>
+            <DialogTitle className="text-xl text-blue-900 flex items-center gap-2">
+              <Smartphone className="w-6 h-6 text-green-600" />
+              Complete M-Pesa Payment
+            </DialogTitle>
+            <DialogDescription className="text-gray-600">
+              Send the exact amount to either of these options
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6">
+            {/* Amount to Pay */}
+            <div className="p-4 bg-green-50 border-2 border-green-500 rounded-lg text-center">
+              <p className="text-sm text-green-700 mb-1">Amount to Pay</p>
+              <p className="text-3xl font-bold text-green-800">
+                KES {bookingData?.totalPrice.toLocaleString()}
+              </p>
+            </div>
+
+            {/* Till Number */}
+            <div className="space-y-2">
+              <Label className="text-blue-900 font-semibold">Option 1: Till Number</Label>
+              <div className="flex items-center gap-2">
+                <div className="flex-1 p-3 bg-gray-50 border border-gray-300 rounded-lg">
+                  <p className="text-xs text-gray-600 mb-1">Lipa Na M-Pesa</p>
+                  <p className="text-2xl font-bold text-blue-900">431307</p>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="shrink-0"
+                  onClick={() => copyToClipboard('431307', 'till')}
+                >
+                  {copiedTill ? (
+                    <Check className="w-4 h-4 text-green-600" />
+                  ) : (
+                    <Copy className="w-4 h-4" />
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <Separator className="w-full" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-2 text-gray-500">OR</span>
+              </div>
+            </div>
+
+            {/* Paybill */}
+            <div className="space-y-3">
+              <Label className="text-blue-900 font-semibold">Option 2: Paybill</Label>
+              
+              <div>
+                <p className="text-xs text-gray-600 mb-1">Paybill Number</p>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 p-3 bg-gray-50 border border-gray-300 rounded-lg">
+                    <p className="text-xl font-bold text-blue-900">522533</p>
+                    <p className="text-xs text-gray-600">KCB Paybill</p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="shrink-0"
+                    onClick={() => copyToClipboard('522533', 'paybill')}
+                  >
+                    {copiedPaybill ? (
+                      <Check className="w-4 h-4 text-green-600" />
+                    ) : (
+                      <Copy className="w-4 h-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+
+              <div>
+                <p className="text-xs text-gray-600 mb-1">Account Number</p>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 p-3 bg-gray-50 border border-gray-300 rounded-lg">
+                    <p className="text-xl font-bold text-blue-900">126075</p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="shrink-0"
+                    onClick={() => copyToClipboard('126075', 'account')}
+                  >
+                    {copiedAccount ? (
+                      <Check className="w-4 h-4 text-green-600" />
+                    ) : (
+                      <Copy className="w-4 h-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* M-Pesa Code Input */}
+            <form onSubmit={handleMpesaCodeSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="mpesaCode" className="text-blue-900 font-semibold">
+                  Enter M-Pesa Confirmation Code
+                </Label>
+                <Input
+                  id="mpesaCode"
+                  type="text"
+                  placeholder="e.g., RK12ABC34D"
+                  value={mpesaCode}
+                  onChange={(e) => setMpesaCode(e.target.value.toUpperCase())}
+                  className="bg-white border-gray-300 text-blue-900 text-lg font-mono"
+                  required
+                />
+                <p className="text-xs text-gray-600">
+                  You'll receive this code via SMS after completing the payment
+                </p>
+              </div>
+
+              {paymentError && (
+                <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                  <p className="text-red-600 text-xs">{paymentError}</p>
+                </div>
+              )}
+
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setShowMpesaModal(false)}
+                  disabled={isProcessing}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                  disabled={isProcessing || !mpesaCode}
+                >
+                  {isProcessing ? (
+                    <>Verifying...</>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-4 h-4 mr-2" />
+                      Confirm Payment
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+
+            {/* Help Text */}
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-xs text-blue-800">
+                <strong>Note:</strong> Please ensure you send the exact amount shown above. 
+                Your booking will be confirmed once we verify your payment.
+              </p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
   </main>
 );
 }

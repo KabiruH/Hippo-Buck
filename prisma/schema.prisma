@@ -115,6 +115,7 @@ model Booking {
   status            String    @default("PENDING") // "PENDING", "CONFIRMED", "CHECKED_IN", "CHECKED_OUT", "CANCELLED", "NO_SHOW"
   paymentMethod     String?   // "CASH", "MPESA", "CREDIT_CARD", "DEBIT_CARD", "BANK_TRANSFER", "CHEQUE"
   specialRequests   String?   @db.NVarChar(Max)
+  mpesaCode         String?
   
   // Check-in/out times
   actualCheckIn     DateTime?
@@ -140,6 +141,7 @@ model Booking {
   @@index([guestEmail])
   @@index([bookingNumber])
   @@index([checkInDate, checkOutDate])
+  @@index([mpesaCode])
 }
 
 // Many-to-many relation between bookings and rooms
