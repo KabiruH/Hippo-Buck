@@ -61,11 +61,11 @@ export default function ContactPage() {
                   <Phone className="w-8 h-8 text-blue-600" />
                 </div>
                 <h3 className="text-gray-900 font-semibold mb-2">Call Us</h3>
-                <a href="tel:+254700000000" className="text-gray-700 hover:text-blue-600 transition-colors text-sm block">
-                  +254 700 000 000
+                <a href="tel:+254723262000" className="text-gray-700 hover:text-blue-600 transition-colors text-sm block">
+                  +254 723 262 000 
                 </a>
-                <a href="tel:+254722000000" className="text-gray-700 hover:text-blue-600 transition-colors text-sm block">
-                  +254 722 000 000
+                <a href="tel:+254733708465" className="text-gray-700 hover:text-blue-600 transition-colors text-sm block">
+                  +254 733 708 465
                 </a>
               </CardContent>
             </Card>
@@ -77,11 +77,11 @@ export default function ContactPage() {
                   <Mail className="w-8 h-8 text-blue-600" />
                 </div>
                 <h3 className="text-gray-900 font-semibold mb-2">Email Us</h3>
-                <a href="mailto:info@hotelhippobuck.com" className="text-gray-700 hover:text-blue-600 transition-colors text-sm block">
-                  info@hotelhippobuck.com
+                <a href="mailto:info@hippobuck.com" className="text-gray-700 hover:text-blue-600 transition-colors text-sm block">
+                  info@hippobuck.com
                 </a>
-                <a href="mailto:reservations@hotelhippobuck.com" className="text-gray-700 hover:text-blue-600 transition-colors text-sm block">
-                  reservations@hotelhippobuck.com
+                <a href="mailto:info@hippobuck.com" className="text-gray-700 hover:text-blue-600 transition-colors text-sm block">
+                  info@hippobuck.com
                 </a>
               </CardContent>
             </Card>

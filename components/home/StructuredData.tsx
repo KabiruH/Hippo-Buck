@@ -8,8 +8,8 @@ export default function StructuredData() {
     image: 'https://hotelhippobuck.com/og-image.jpg',
     '@id': 'https://hotelhippobuck.com',
     url: 'https://hotelhippobuck.com',
-    telephone: '+254700000000',
-    email: 'info@hotelhippobuck.com',
+    telephone: '+254723262000',
+    email: 'info@hippobuck.com',
     address: {
       '@type': 'PostalAddress',
       streetAddress: 'Homa Bay Town',
@@ -228,9 +228,9 @@ export default function StructuredData() {
       'East African and Non East African pricing available',
     ],
     sameAs: [
-      'https://facebook.com/hotelhippobuck',
-      'https://instagram.com/hotelhippobuck',
-      'https://twitter.com/hotelhippobuck',
+      'https://facebook.com/hippobuck',
+      'https://instagram.com/hippobuck',
+      'https://twitter.com/hippobuck',
     ],
   };
 

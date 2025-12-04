@@ -18,7 +18,7 @@ export default function Footer() {
             </p>
             <div className="flex space-x-4">
               <a
-                href="https://facebook.com/hotelhippobuck"
+                href="https://facebook.com/hippobuck"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-gray-600 hover:text-blue-600 transition-colors"                aria-label="Facebook"
@@ -27,7 +27,7 @@ export default function Footer() {
               </a>
               
               <a
-                href="https://instagram.com/hotelhippobuck"
+                href="https://instagram.com/hippobuck"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-gray-600 hover:text-blue-600 transition-colors"                aria-label="Instagram"
@@ -36,7 +36,7 @@ export default function Footer() {
               </a>
               
               <a
-                href="https://twitter.com/hotelhippobuck"
+                href="https://twitter.com/add hippobuck"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-gray-600 hover:text-blue-600 transition-colors"                aria-label="Twitter"
@@ -64,7 +64,7 @@ export default function Footer() {
                   Rooms & Suites
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link
                   href="/amenities"
                   className="text-gray-600 hover:text-blue-600 transition-colors text-sm"                >
@@ -77,7 +77,7 @@ export default function Footer() {
                   className="text-gray-600 hover:text-blue-600 transition-colors text-sm"                >
                   Gallery
                 </Link>
-              </li>
+              </li> */}
               <li>
                 <Link
                   href="/contact"
@@ -108,15 +108,22 @@ export default function Footer() {
                 <MapPin className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />                <span>Homa Bay Town, Lake Victoria, Homa Bay County, Kenya</span>
               </li>
               <li className="flex items-center space-x-3 text-gray-400 text-sm">
-                <Phone className="w-5 h-5 text-blue-600 shrink-0" />                <a href="tel:+254700000000" className="hover:text-amber-500">
-                  +254 700 000 000
+                <Phone className="w-5 h-5 text-blue-600 shrink-0" />                
+                <a href="tel:+254733708465" className="hover:text-amber-500">
+                  +254 733 708 465
+                </a>
+              </li>
+              <li className="flex items-center space-x-3 text-gray-400 text-sm">
+                <Phone className="w-5 h-5 text-blue-600 shrink-0" />                
+                <a href="tel:+254723262000" className="hover:text-amber-500">
+                  +254 723 262 000
                 </a>
               </li>
               <li className="flex items-center space-x-3 text-gray-400 text-sm">
                 <Mail className="w-5 h-5 text-blue-600 shrink-0" />                <a
-                  href="mailto:info@hotelhippobuck.com"
+                  href="mailto:info@hippobuck.com"
                   className="hover:text-blue-600"                >
-                  info@hotelhippobuck.com
+                  info@hippobuck.com
                 </a>
               </li>
             </ul>

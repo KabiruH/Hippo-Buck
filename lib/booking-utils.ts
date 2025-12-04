@@ -320,8 +320,8 @@ export function generateBookingConfirmationEmail(booking: Booking & {
           
           <p>If you need to modify or cancel your booking, please contact us:</p>
           <p>
-            Phone: +254 700 000 000<br>
-            Email: reservations@hotelhippobuck.com
+            Phone: +254723262000<br>
+            Email: info@hippobuck.com
           </p>
           
           <p>We look forward to welcoming you!</p>
@@ -357,8 +357,8 @@ export function generateBookingConfirmationEmail(booking: Booking & {
     Please present this confirmation code at reception.
     
     Contact us:
-    Phone: +254 700 000 000
-    Email: reservations@hotelhippobuck.com
+    Phone: +254 723 262 000
+    Email: info@hippobuck.com
     
     We look forward to welcoming you!
     
