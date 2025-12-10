@@ -71,7 +71,7 @@ export default function Navbar() {
               asChild
               className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
             >
-              <Link href="/login">Staff Login</Link>
+              <Link href="/login">STAFF LOGIN</Link>
             </Button>
           </div>
 

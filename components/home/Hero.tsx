@@ -59,7 +59,7 @@ export default function Hero() {
               size="lg"
               className="bg-blue-600 hover:bg-blue-700 text-white px-12 py-6 text-lg tracking-wider"
             >
-              <Link href="/booking-lookup">Confirm Booking</Link>
+              <Link href="/booking-lookup">CONFIRM BOOKING</Link>
             </Button>
           </div>
         </div>
