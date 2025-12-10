@@ -112,7 +112,7 @@ export default function Navbar() {
                 asChild
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white"
               >
-                <Link href="/login">Staff Login</Link>
+                <Link href="/login">STAFF LOGIN</Link>
               </Button>
             </div>
           </div>
