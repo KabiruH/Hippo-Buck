@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Search, Calendar, Users, DoorOpen, Mail, Phone, CreditCard, CheckCircle, Clock, XCircle, AlertCircle } from 'lucide-react';
+import { Search, Calendar, Users, DoorOpen, Mail, Phone, CreditCard, CheckCircle, Clock, XCircle, AlertCircle, Edit } from 'lucide-react';
+import EditBookingModal from '@/components/bookings/EditBookingModal';
 
 interface BookingDetails {
   id: string;
@@ -50,6 +51,7 @@ export default function BookingLookupPage() {
   const [isSearching, setIsSearching] = useState(false);
   const [booking, setBooking] = useState<BookingDetails | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,6 +111,30 @@ export default function BookingLookupPage() {
     }
   };
 
+  // Refresh booking data after edit
+  const handleBookingUpdated = async () => {
+    if (booking) {
+      setIsSearching(true);
+      try {
+        const response = await fetch(`/api/bookings/${booking.id}`, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.booking) {
+          setBooking(data.booking);
+        }
+      } catch (err) {
+        console.error('Error refreshing booking:', err);
+      } finally {
+        setIsSearching(false);
+      }
+    }
+  };
+
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
       PENDING: 'bg-yellow-100 text-yellow-800 border-yellow-300',
@@ -162,6 +188,24 @@ export default function BookingLookupPage() {
   const remainingBalance = booking 
     ? Number(booking.totalAmount) - Number(booking.paidAmount)
     : 0;
+
+  // Calculate total guests and nights for edit modal
+  const bookingForModal = booking ? {
+    bookingId: booking.id,
+    bookingNumber: booking.bookingNumber,
+    guest: {
+      firstName: booking.guestFirstName,
+      lastName: booking.guestLastName,
+      email: booking.guestEmail,
+      phone: booking.guestPhone,
+    },
+    checkIn: booking.checkInDate,
+    checkOut: booking.checkOutDate,
+    totalGuests: booking.numberOfAdults + booking.numberOfChildren,
+    numberOfRooms: booking.rooms.length,
+    specialRequests: booking.specialRequests,
+    status: booking.status,
+  } : null;
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -304,6 +348,18 @@ export default function BookingLookupPage() {
                     </p>
                   )}
                 </div>
+                {/* Edit Button in Status Banner */}
+                {(booking.status === 'PENDING' || booking.status === 'CONFIRMED') && (
+                  <Button
+                    onClick={() => setIsEditModalOpen(true)}
+                    variant="outline"
+                    size="sm"
+                    className="bg-white hover:bg-gray-50"
+                  >
+                    <Edit className="w-4 h-4 mr-2" />
+                    Edit Booking
+                  </Button>
+                )}
               </div>
 
               {/* Booking Info */}
@@ -497,6 +553,16 @@ export default function BookingLookupPage() {
           )}
         </div>
       </section>
+
+      {/* Edit Booking Modal */}
+      {bookingForModal && (
+        <EditBookingModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          bookingData={bookingForModal}
+          onBookingUpdated={handleBookingUpdated}
+        />
+      )}
     </main>
   );
 }

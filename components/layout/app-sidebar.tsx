@@ -10,8 +10,6 @@ import {
   Calendar,
   DoorOpen,
   LogOut,
-  ChevronLeft,
-  Menu,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -21,12 +19,10 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarProvider,
-  SidebarTrigger,
   useSidebar,
 } from '@/components/ui/sidebar';
+import { toast} from 'sonner'
 import { Separator } from '@/components/ui/separator';
-import { Button } from '@/components/ui/button';
 import {
   Tooltip,
   TooltipContent,

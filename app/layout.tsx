@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import StructuredData from '@/components/home/StructuredData';
+import { Toaster } from "sonner"
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -95,7 +96,25 @@ export default function RootLayout({
       <body className={inter.className}>
         <StructuredData />
         {children}
-
+<Toaster
+  theme="light"
+  position="top-center"
+  richColors
+  closeButton
+  toastOptions={{
+    className: 'text-lg', // Keeps font size large
+    style: {
+      minWidth: '350px',   // Increased Minimum Width
+      minHeight: '80px',   // Added Minimum Height
+      padding: '16px 20px', // Increased Padding for internal spacing
+      fontSize: '1.2rem',  // Ensure font is visibly larger if className isn't enough
+      backgroundColor: '#1f2937', // A dark gray/blue color
+      color: '#f9fafb',          // Near-white text color
+      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.5)',
+    },
+    duration: 5000,
+  }}
+/>
       </body>
     </html>
   );

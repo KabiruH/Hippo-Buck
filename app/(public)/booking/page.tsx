@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { toast } from 'sonner'
 import {
   Select,
   SelectContent,
@@ -82,7 +83,7 @@ function BookingContent() {
     e.preventDefault();
     
     if (!isGuestCapacityValid) {
-      alert(`Maximum ${maxGuestsPerRoom} guests per room allowed!`);
+      toast(`Maximum ${maxGuestsPerRoom} guests per room allowed!`);
       return;
     }
 
@@ -236,7 +237,7 @@ function BookingContent() {
       
     } catch (error) {
       console.error('Booking error:', error);
-      alert(error instanceof Error ? error.message : 'Failed to create booking. Please try again.');
+      toast(error instanceof Error ? error.message : 'Failed to create booking. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
