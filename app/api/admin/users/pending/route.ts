@@ -1,36 +1,24 @@
-// app/api/admin/users/pending/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { verifyToken } from '@/lib/auth';
+import { authenticateUser, requireRole } from '@/lib/auth-middleware';
 import { UserRole } from '@/lib/constant';
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
   try {
-    // Get token from Authorization header
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json(
-        { error: 'Authorization token required' },
-        { status: 401 }
-      );
-    }
-
-    const token = authHeader.substring(7);
-    const decoded = verifyToken(token);
-
-    if (!decoded) {
-      return NextResponse.json(
-        { error: 'Invalid or expired token' },
-        { status: 401 }
-      );
+    // Authenticate user
+    const { user, error } = await authenticateUser(request);
+    
+    if (error) {
+      return error;
     }
 
     // Check if requester is admin or manager
-    if (decoded.role !== UserRole.ADMIN && decoded.role !== UserRole.MANAGER) {
-      return NextResponse.json(
-        { error: 'Only administrators and managers can view pending users' },
-        { status: 403 }
-      );
+    const roleError = requireRole(user!, [UserRole.ADMIN, UserRole.MANAGER]);
+    if (roleError) {
+      return roleError;
     }
 
     // Get all pending users (isActive = false)

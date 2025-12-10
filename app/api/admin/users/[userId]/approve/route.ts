@@ -1,8 +1,10 @@
-// app/api/admin/users/[userId]/approve/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { verifyToken } from '@/lib/auth';
+import { authenticateUser, requireRole } from '@/lib/auth-middleware';
 import { UserRole } from '@/lib/constant';
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function POST(
   request: NextRequest,
@@ -11,47 +13,33 @@ export async function POST(
   try {
     const { userId } = await context.params;
 
-    // Get token from Authorization header
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json(
-        { error: 'Authorization token required' },
-        { status: 401 }
-      );
-    }
-
-    const token = authHeader.substring(7);
-    const decoded = verifyToken(token);
-
-    if (!decoded) {
-      return NextResponse.json(
-        { error: 'Invalid or expired token' },
-        { status: 401 }
-      );
+    // Authenticate user
+    const { user, error } = await authenticateUser(request);
+    
+    if (error) {
+      return error;
     }
 
     // Check if requester is admin or manager
-    if (decoded.role !== UserRole.ADMIN && decoded.role !== UserRole.MANAGER) {
-      return NextResponse.json(
-        { error: 'Only administrators and managers can approve users' },
-        { status: 403 }
-      );
+    const roleError = requireRole(user!, [UserRole.ADMIN, UserRole.MANAGER]);
+    if (roleError) {
+      return roleError;
     }
 
     const body = await request.json();
     const { approved } = body; // true to approve, false to reject
 
     // Get the user to be approved/rejected
-    const user = await prisma.user.findUnique({
+    const userToUpdate = await prisma.user.findUnique({
       where: { id: userId },
     });
 
-    if (!user) {
+    if (!userToUpdate) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     // Can't modify admin accounts through this endpoint
-    if (user.role === UserRole.ADMIN) {
+    if (userToUpdate.role === UserRole.ADMIN) {
       return NextResponse.json(
         { error: 'Cannot modify admin accounts through this endpoint' },
         { status: 403 }
@@ -76,12 +64,12 @@ export async function POST(
       // Log activity
       await prisma.activityLog.create({
         data: {
-          userId: decoded.userId,
+          userId: user!.userId,
           action: 'USER_APPROVED',
           entityType: 'User',
           entityId: userId,
           details: JSON.stringify({
-            approvedBy: decoded.email,
+            approvedBy: user!.email,
             userEmail: updatedUser.email,
           }),
         },
@@ -100,13 +88,13 @@ export async function POST(
       // Log activity
       await prisma.activityLog.create({
         data: {
-          userId: decoded.userId,
+          userId: user!.userId,
           action: 'USER_REJECTED',
           entityType: 'User',
           entityId: userId,
           details: JSON.stringify({
-            rejectedBy: decoded.email,
-            userEmail: user.email,
+            rejectedBy: user!.email,
+            userEmail: userToUpdate.email,
           }),
         },
       });
