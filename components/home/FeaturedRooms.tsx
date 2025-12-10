@@ -8,7 +8,7 @@ const rooms = [
   {
     id: 1,
     name: 'Standard Room',
-    description: 'Comfortable accommodation with essential amenities',
+    description: 'Comfortable accommodation',
     priceKES: 'KES 3,000 - 3,500',
     priceUSD: 'USD 40 - 45',
     image: '/1a.jpg',
@@ -18,7 +18,7 @@ const rooms = [
   {
     id: 2,
     name: 'Superior (Pool View)',
-    description: 'Stunning pool views with premium comfort',
+    description: 'Stunning pool views',
     priceKES: 'KES 5,000 - 5,500',
     priceUSD: 'USD 55 - 65',
     image: '/8a.jpg',
@@ -28,7 +28,7 @@ const rooms = [
   {
     id: 3,
     name: 'Superior (Garden View)',
-    description: 'Serene garden views with luxury amenities',
+    description: 'Serene garden views',
     priceKES: 'KES 6,500 - 7,500',
     priceUSD: 'USD 75 - 110',
     image: '/3.jpg',

@@ -59,7 +59,7 @@ function BookingConfirmationContent() {
       const headers: HeadersInit = {
         'Content-Type': 'application/json',
       };
-      
+
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
@@ -107,15 +107,17 @@ function BookingConfirmationContent() {
     }
   };
 
-  const handlePayment = async () => {
-    if (!selectedPaymentMethod || !bookingData) {
-      alert('Please select a payment method');
-      return;
-    }
+ const handlePayment = async () => {
+  if (!selectedPaymentMethod || !bookingData) {
+    alert('Please select a payment method');
+    return;
+  }
 
-    setIsProcessingPayment(true);
+  setIsProcessingPayment(true);
 
-    try {
+  try {
+    if (selectedPaymentMethod === 'MPESA') {
+      // Initiate M-Pesa payment
       const token = localStorage.getItem('token');
       const headers: HeadersInit = {
         'Content-Type': 'application/json',
@@ -125,58 +127,102 @@ function BookingConfirmationContent() {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      if (selectedPaymentMethod === 'MPESA') {
-        // Initiate M-Pesa payment
-        const response = await fetch('/api/payments/mpesa', {
-          method: 'POST',
-          credentials: 'include',
-          headers,
-          body: JSON.stringify({
-            bookingId: bookingData.bookingId,
-            amount: bookingData.totalPrice,
-            phoneNumber: bookingData.guest.phone,
-          }),
-        });
+      const response = await fetch('/api/payments/mpesa', {
+        method: 'POST',
+        credentials: 'include',
+        headers,
+        body: JSON.stringify({
+          bookingId: bookingData.bookingId,
+          amount: Number(bookingData.totalPrice),
+          phoneNumber: bookingData.guest.phone,
+        }),
+      });
 
-        const data = await response.json();
+      const data = await response.json();
 
-        if (!response.ok) {
-          throw new Error(data.error || 'Payment failed');
-        }
-
-        alert(data.message + '\n' + data.instructions);
-        // Redirect to booking status page or refresh
-        router.push(`/booking-status?id=${bookingData.bookingId}`);
-      } else {
-        // For Cash and Card, create payment record
-        const response = await fetch('/api/payments', {
-          method: 'POST',
-          credentials: 'include',
-          headers,
-          body: JSON.stringify({
-            bookingId: bookingData.bookingId,
-            amount: bookingData.totalPrice,
-            paymentMethod: selectedPaymentMethod,
-            notes: `Payment via ${selectedPaymentMethod}`,
-          }),
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || 'Payment failed');
-        }
-
-        alert('Payment recorded successfully! Your booking is now CONFIRMED.');
-        router.push(`/booking-status?id=${bookingData.bookingId}`);
+      if (!response.ok) {
+        throw new Error(data.error || 'Payment failed');
       }
-    } catch (error) {
-      console.error('Payment error:', error);
-      alert(error instanceof Error ? error.message : 'Payment failed. Please try again.');
-    } finally {
-      setIsProcessingPayment(false);
+
+      alert(data.message + '\n' + (data.instructions || ''));
+      sessionStorage.removeItem('bookingConfirmation');
+      router.push(`/booking-status?id=${bookingData.bookingId}`);
+      
+    } else if (selectedPaymentMethod === 'CASH') {
+      // For CASH - just record the payment method, keep booking PENDING
+      const response = await fetch(`/api/bookings/${bookingData.bookingId}/payment-method`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          paymentMethod: 'CASH',
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to update booking');
+      }
+
+      alert(
+        '✅ Booking Confirmed!\n\n' +
+        'You can pay with cash when you arrive at the hotel.\n\n' +
+        'Booking Reference: ' + bookingData.bookingNumber + '\n' +
+        'Check-in: ' + new Date(bookingData.checkIn).toLocaleDateString() + '\n\n' +
+        'A confirmation email has been sent to ' + bookingData.guest.email
+      );
+      sessionStorage.removeItem('bookingConfirmation');
+      router.push(`/booking-status?id=${bookingData.bookingId}`);
+      
+    } else if (selectedPaymentMethod === 'CARD') {
+      // For CARD - process payment immediately and confirm booking
+      const token = localStorage.getItem('token');
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch('/api/payments', {
+        method: 'POST',
+        credentials: 'include',
+        headers,
+        body: JSON.stringify({
+          bookingId: bookingData.bookingId,
+          amount: Number(bookingData.totalPrice),
+          paymentMethod: 'CARD',
+          transactionId: `CARD-${Date.now()}`,
+          notes: `Card payment at booking confirmation`,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Payment failed');
+      }
+
+      alert(
+        '✅ Payment Successful!\n\n' +
+        'Your booking is now CONFIRMED.\n\n' +
+        'Booking Reference: ' + bookingData.bookingNumber + '\n' +
+        'Amount Paid: ' + currencySymbol + bookingData.totalPrice.toLocaleString() + '\n\n' +
+        'A confirmation email has been sent to ' + bookingData.guest.email
+      );
+      sessionStorage.removeItem('bookingConfirmation');
+      router.push(`/booking-status?id=${bookingData.bookingId}`);
     }
-  };
+  } catch (error) {
+    console.error('Payment error:', error);
+    alert('❌ Error: ' + (error instanceof Error ? error.message : 'Payment failed. Please try again.'));
+  } finally {
+    setIsProcessingPayment(false);
+  }
+};
 
   if (!bookingData) {
     return (
@@ -332,11 +378,10 @@ function BookingConfirmationContent() {
                   {/* M-Pesa */}
                   <button
                     onClick={() => setSelectedPaymentMethod('MPESA')}
-                    className={`w-full p-4 rounded-lg border-2 transition-all ${
-                      selectedPaymentMethod === 'MPESA'
+                    className={`w-full p-4 rounded-lg border-2 transition-all ${selectedPaymentMethod === 'MPESA'
                         ? 'border-blue-500 bg-blue-50'
                         : 'border-gray-300 hover:border-gray-400'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-3">
                       <Smartphone className="w-6 h-6 text-green-600" />
@@ -351,19 +396,19 @@ function BookingConfirmationContent() {
                   </button>
 
                   {/* Cash */}
+
                   <button
                     onClick={() => setSelectedPaymentMethod('CASH')}
-                    className={`w-full p-4 rounded-lg border-2 transition-all ${
-                      selectedPaymentMethod === 'CASH'
+                    className={`w-full p-4 rounded-lg border-2 transition-all ${selectedPaymentMethod === 'CASH'
                         ? 'border-blue-500 bg-blue-50'
                         : 'border-gray-300 hover:border-gray-400'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-3">
                       <Banknote className="w-6 h-6 text-blue-600" />
                       <div className="text-left flex-1">
-                        <p className="text-gray-900 font-medium">Cash</p>
-                        <p className="text-gray-600 text-sm">Pay at the hotel</p>
+                        <p className="text-gray-900 font-medium">Cash (Pay Later)</p>
+                        <p className="text-gray-600 text-sm">Pay when you arrive at the hotel</p>
                       </div>
                       {selectedPaymentMethod === 'CASH' && (
                         <CheckCircle className="w-5 h-5 text-blue-600" />
@@ -374,11 +419,10 @@ function BookingConfirmationContent() {
                   {/* Card */}
                   <button
                     onClick={() => setSelectedPaymentMethod('CARD')}
-                    className={`w-full p-4 rounded-lg border-2 transition-all ${
-                      selectedPaymentMethod === 'CARD'
+                    className={`w-full p-4 rounded-lg border-2 transition-all ${selectedPaymentMethod === 'CARD'
                         ? 'border-blue-500 bg-blue-50'
                         : 'border-gray-300 hover:border-gray-400'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-3">
                       <CreditCard className="w-6 h-6 text-purple-600" />
@@ -403,8 +447,12 @@ function BookingConfirmationContent() {
                         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                         Processing...
                       </>
+                    ) : selectedPaymentMethod === 'CASH' ? (
+                      'Confirm Booking (Pay Later)'
+                    ) : selectedPaymentMethod === 'MPESA' ? (
+                      `Pay ${currencySymbol}${bookingData.totalPrice.toLocaleString()} via M-Pesa`
                     ) : (
-                      <>Pay {currencySymbol}{bookingData.totalPrice.toLocaleString()}</>
+                      `Pay ${currencySymbol}${bookingData.totalPrice.toLocaleString()} with Card`
                     )}
                   </Button>
                 </CardContent>
@@ -444,11 +492,10 @@ function BookingConfirmationContent() {
                   <div className="flex items-center justify-between">
                     <span className="text-gray-600 text-sm">Status:</span>
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        isPending
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${isPending
                           ? 'bg-yellow-100 text-yellow-800'
                           : 'bg-green-100 text-green-800'
-                      }`}
+                        }`}
                     >
                       {bookingData.status}
                     </span>
