@@ -1,9 +1,10 @@
-// app/api/users/route.ts
-
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateUser, requireRole } from '@/lib/auth-middleware';
 import { UserRole } from '@/lib/constant';
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,13 +14,13 @@ export async function GET(request: NextRequest) {
     if (error) {
       return error;
     }
-
+    
     // Check if user has required role (ADMIN or MANAGER)
     const roleError = requireRole(user!, [UserRole.ADMIN, UserRole.MANAGER]);
     if (roleError) {
       return roleError;
     }
-
+    
     // Get all users (excluding passwords)
     const users = await prisma.user.findMany({
       select: {
@@ -37,7 +38,7 @@ export async function GET(request: NextRequest) {
         createdAt: 'desc',
       },
     });
-
+    
     return NextResponse.json(
       { users },
       { status: 200 }

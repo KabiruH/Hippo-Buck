@@ -6,10 +6,8 @@ const secret = new TextEncoder().encode(JWT_SECRET);
 
 export async function authenticateUser(request: NextRequest) {
   try {
-    // Get token from Authorization header or cookie
     const authHeader = request.headers.get('authorization');
     const cookieToken = request.cookies.get('token')?.value;
-    
     const token = authHeader?.replace('Bearer ', '') || cookieToken;
 
     if (!token) {
@@ -22,7 +20,6 @@ export async function authenticateUser(request: NextRequest) {
       };
     }
 
-    // Verify token using jose
     const { payload } = await jwtVerify(token, secret);
 
     return {
@@ -64,4 +61,21 @@ export async function requireAdmin(request: NextRequest) {
   }
   
   return { user, error: null };
+}
+
+// ✅ NEW: Synchronous helper to check if user has required role
+export function requireRole(
+  user: { userId: string; email: string; role: string },
+  allowedRoles: string[]
+): NextResponse | null {
+  if (!user || !allowedRoles.includes(user.role)) {
+    return NextResponse.json(
+      { 
+        error: `Forbidden. Required role: ${allowedRoles.join(' or ')}. Current role: ${user?.role || 'none'}` 
+      },
+      { status: 403 }
+    );
+  }
+  
+  return null; // No error, user has required role
 }
