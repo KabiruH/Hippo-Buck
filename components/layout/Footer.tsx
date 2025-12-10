@@ -9,7 +9,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="space-y-4">
             <div className="text-xl md:text-2xl font-bold">
-              <span className="text-white">HOTEL </span>
+              <span className="text-blue-600">HOTEL </span>
               <span className="text-blue-600">HIPPO BUCK</span>            </div>
             <p className="text-gray-400 text-sm">
               Your serene lakeside retreat in Homa Bay Town. Experience the 
