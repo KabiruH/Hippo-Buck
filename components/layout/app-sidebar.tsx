@@ -1,4 +1,3 @@
-// components/app-sidebar.tsx
 'use client';
 
 import Link from 'next/link';
@@ -10,6 +9,7 @@ import {
   Calendar,
   DoorOpen,
   LogOut,
+  UserCircle,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -21,7 +21,7 @@ import {
   SidebarMenuButton,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { toast} from 'sonner'
+import { toast } from 'sonner';
 import { Separator } from '@/components/ui/separator';
 import {
   Tooltip,
@@ -55,7 +55,7 @@ const navItems: NavItem[] = [
     title: 'Users',
     href: '/users',
     icon: Users,
-    roles: ['ADMIN', 'MANAGER',],
+    roles: ['ADMIN', 'MANAGER'],
   },
   {
     title: 'Bookings',
@@ -67,6 +67,12 @@ const navItems: NavItem[] = [
     title: 'Rooms',
     href: '/rooms-control',
     icon: DoorOpen,
+    roles: ['ADMIN', 'MANAGER', 'STAFF'],
+  },
+  {
+    title: 'Profile',
+    href: '/profile',
+    icon: UserCircle,
     roles: ['ADMIN', 'MANAGER', 'STAFF'],
   },
 ];
@@ -94,6 +100,7 @@ export function AppSidebar() {
     if (confirm('Are you sure you want to logout?')) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      toast.success('Logged out successfully');
       router.push('/login');
     }
   };
@@ -182,11 +189,8 @@ export function AppSidebar() {
               </SidebarMenuItem>
             );
           })}
-        </SidebarMenu>
-      </SidebarContent>
 
-      <SidebarFooter className="border-t border-gray-200 p-4">
-        <SidebarMenu>
+          {/* Logout Button */}
           <SidebarMenuItem>
             <TooltipProvider delayDuration={0}>
               <Tooltip>
@@ -208,6 +212,14 @@ export function AppSidebar() {
             </TooltipProvider>
           </SidebarMenuItem>
         </SidebarMenu>
+      </SidebarContent>
+
+      <SidebarFooter className="border-t border-gray-200 p-4">
+        {state === 'expanded' && (
+          <div className="text-center text-xs text-gray-500">
+            © 2024 Hotel Hippo Buck
+          </div>
+        )}
       </SidebarFooter>
     </Sidebar>
   );

@@ -27,6 +27,7 @@ export default function UsersManagementPage() {
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [filterRole, setFilterRole] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [currentUserRole, setCurrentUserRole] = useState<string>('');
 
   useEffect(() => {
     fetchUsers();
@@ -68,6 +69,26 @@ export default function UsersManagementPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/auth/me', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setCurrentUserRole(data.user.role);
+        }
+      } catch (error) {
+        console.error('Failed to fetch current user:', error);
+      }
+    };
+
+    fetchCurrentUser();
+  }, []);
 
   const handleApprove = async (userId: string, userName: string) => {
     if (!confirm(`Approve account for ${userName}?`)) return;
@@ -174,11 +195,10 @@ export default function UsersManagementPage() {
         {alert && (
           <Alert
             variant={alert.type === 'error' ? 'destructive' : 'default'}
-            className={`mb-6 ${
-              alert.type === 'success'
+            className={`mb-6 ${alert.type === 'success'
                 ? 'bg-green-900/30 border-green-700 text-green-400'
                 : 'bg-red-900/30 border-red-700 text-red-400'
-            }`}
+              }`}
           >
             {alert.type === 'success' ? (
               <CheckCircle2 className="h-4 w-4" />
@@ -215,7 +235,9 @@ export default function UsersManagementPage() {
                 user={user}
                 onApprove={handleApprove}
                 onReject={handleReject}
+                onUserUpdated={fetchUsers} // Your function to refresh the user list
                 isLoading={actionLoading === user.id}
+                currentUserRole={currentUserRole}
               />
             ))}
           </div>

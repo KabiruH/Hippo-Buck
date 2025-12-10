@@ -1,4 +1,4 @@
-// app/api/admin/users/route.ts
+// app/api/admin/users/[userId]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateUser } from '@/lib/auth-middleware';
