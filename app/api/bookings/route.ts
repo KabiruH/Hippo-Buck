@@ -3,6 +3,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateUser } from '@/lib/auth-middleware';
 import {
+  sendBookingConfirmationToGuest,
+  sendBookingNotificationToOrganization
+} from '@/lib/email-service';
+import {
   generateBookingNumber,
   validateBookingDates,
   calculateRoomPrice,
@@ -124,7 +128,7 @@ export async function POST(request: NextRequest) {
 
     // Determine booking status
     let bookingStatus: BookingStatus;
-    
+
     if (isStaffBooking && manualConfirm) {
       // Staff can manually confirm booking regardless of payment
       bookingStatus = BookingStatus.CONFIRMED;
@@ -227,6 +231,50 @@ export async function POST(request: NextRequest) {
           }),
         },
       });
+    }
+
+    try {
+      const room = booking.rooms[0]?.room?.roomType?.name || "Room"; // first booked room type
+
+      await sendBookingConfirmationToGuest({
+        to: booking.guestEmail,
+        bookingNumber: booking.bookingNumber,
+        guestName: `${booking.guestFirstName} ${booking.guestLastName}`,
+        guestEmail: booking.guestEmail,
+        guestPhone: booking.guestPhone,
+        roomType: room,
+        numberOfRooms: booking.rooms.length,
+        numberOfGuests: booking.numberOfAdults + booking.numberOfChildren,
+        checkInDate: booking.checkInDate.toString(),
+        checkOutDate: booking.checkOutDate.toString(),
+        nights: booking.rooms[0]?.numberOfNights ?? 1,
+        totalAmount: booking.totalAmount?.toNumber?.() ?? 0,
+        paymentMethod: booking.paymentMethod ?? undefined,
+        specialRequests: booking.specialRequests ?? undefined,
+        status: booking.status,
+      });
+
+      await sendBookingNotificationToOrganization({
+        to: process.env.ORGANIZATION_EMAIL ?? "info@hotelhippobuck.com",
+        bookingNumber: booking.bookingNumber,
+        guestName: `${booking.guestFirstName} ${booking.guestLastName}`,
+        guestEmail: booking.guestEmail,
+        guestPhone: booking.guestPhone,
+        roomType: room,
+        numberOfRooms: booking.rooms.length,
+        numberOfGuests: booking.numberOfAdults + booking.numberOfChildren,
+        checkInDate: booking.checkInDate.toString(),
+        checkOutDate: booking.checkOutDate.toString(),
+        nights: booking.rooms[0]?.numberOfNights ?? 1,
+        totalAmount: booking.totalAmount?.toNumber?.() ?? 0,
+        paymentMethod: booking.paymentMethod ?? undefined,
+        specialRequests: booking.specialRequests ?? undefined,
+        status: booking.status,
+      });
+
+      console.log("📧 Booking emails sent successfully");
+    } catch (err) {
+      console.error("❌ Error sending booking email(s):", err);
     }
 
     return NextResponse.json(

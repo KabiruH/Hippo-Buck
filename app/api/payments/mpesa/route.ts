@@ -3,15 +3,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateUser } from '@/lib/auth-middleware';
 import { PaymentStatus, PaymentMethod, BookingStatus } from '@/lib/constant';
+import { mpesaService } from '@/lib/mpesa'; 
+import { 
+  sendPaymentConfirmationToGuest, 
+  sendPaymentNotificationToOrganization 
+} from '@/lib/email-service';
+
 
 // Initiate M-Pesa STK Push
 export async function POST(request: NextRequest) {
   try {
-    const { user, error } = await authenticateUser(request);
-
-    if (error) {
-      return error;
-    }
+    // Authentication is optional - guests can make payments too
+    const authResult = await authenticateUser(request);
+    const user = authResult.user;
 
     const body = await request.json();
     const { bookingId, amount, phoneNumber } = body;
@@ -25,8 +29,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate phone number format (Kenyan)
-    const phoneRegex = /^(254|0)[17]\d{8}$/;
-    if (!phoneRegex.test(phoneNumber)) {
+    const phoneRegex = /^(254|0|\+254)?[17]\d{8}$/;
+    if (!phoneRegex.test(phoneNumber.replace(/[\s\-]/g, ''))) {
       return NextResponse.json(
         { error: 'Invalid phone number. Use format: 254712345678 or 0712345678' },
         { status: 400 }
@@ -53,85 +57,72 @@ export async function POST(request: NextRequest) {
     if (amount > remainingBalance) {
       return NextResponse.json(
         {
-          error: `Payment amount exceeds remaining balance of KES ${remainingBalance}`,
+          error: `Payment amount (KES ${amount}) exceeds remaining balance (KES ${remainingBalance})`,
           remainingBalance,
         },
         { status: 400 }
       );
     }
 
-    // Format phone number (remove leading 0 if present, add 254)
-    const formattedPhone = phoneNumber.startsWith('0')
-      ? '254' + phoneNumber.substring(1)
-      : phoneNumber;
+    // Format phone number using the service
+    const formattedPhone = mpesaService.formatPhoneNumber(phoneNumber);
 
-    // TODO: Integrate with actual M-Pesa Daraja API
-    // This is a placeholder - you'll need to add real M-Pesa integration
-    
-    /*
-    Example M-Pesa STK Push implementation:
-    
-    const mpesaResponse = await fetch('https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        BusinessShortCode: process.env.MPESA_SHORTCODE,
-        Password: Buffer.from(`${process.env.MPESA_SHORTCODE}${process.env.MPESA_PASSKEY}${timestamp}`).toString('base64'),
-        Timestamp: timestamp,
-        TransactionType: 'CustomerPayBillOnline',
-        Amount: amount,
-        PartyA: formattedPhone,
-        PartyB: process.env.MPESA_SHORTCODE,
-        PhoneNumber: formattedPhone,
-        CallBackURL: `${process.env.APP_URL}/api/payments/mpesa/callback`,
-        AccountReference: booking.bookingNumber,
-        TransactionDesc: `Payment for booking ${booking.bookingNumber}`,
-      }),
+    // 🎯 Use the mpesaService to initiate STK Push
+    const mpesaResponse = await mpesaService.stkPush({
+      phoneNumber: formattedPhone,
+      amount: Number(amount),
+      accountReference: booking.bookingNumber,
+      transactionDesc: `Payment for booking ${booking.bookingNumber}`,
     });
-    */
+
 
     // Create pending payment record
     const payment = await prisma.payment.create({
       data: {
         bookingId,
-        amount,
+        amount: Number(amount),
         paymentMethod: PaymentMethod.MPESA,
         status: PaymentStatus.PENDING,
-        notes: `M-Pesa payment initiated for ${formattedPhone}`,
-        // transactionId will be updated by callback
+        transactionId: mpesaResponse.CheckoutRequestID, // Store CheckoutRequestID
+        notes: `M-Pesa STK Push initiated for ${formattedPhone}. MerchantRequestID: ${mpesaResponse.MerchantRequestID}`,
       },
     });
 
     // Log activity
-    await prisma.activityLog.create({
-      data: {
-        userId: user!.userId,
-        action: 'MPESA_INITIATED',
-        entityType: 'Payment',
-        entityId: payment.id,
-        details: JSON.stringify({
-          bookingNumber: booking.bookingNumber,
-          amount,
-          phoneNumber: formattedPhone,
-        }),
-      },
-    });
+    if (user) {
+      await prisma.activityLog.create({
+        data: {
+          userId: user.userId,
+          action: 'MPESA_INITIATED',
+          entityType: 'Payment',
+          entityId: payment.id,
+          details: JSON.stringify({
+            bookingNumber: booking.bookingNumber,
+            amount,
+            phoneNumber: formattedPhone,
+            checkoutRequestId: mpesaResponse.CheckoutRequestID,
+          }),
+        },
+      });
+    }
 
     return NextResponse.json(
       {
-        message: 'M-Pesa payment initiated. Please check your phone for the payment prompt.',
+        success: true,
+        message: 'M-Pesa payment initiated successfully',
         payment,
-        instructions: 'Enter your M-Pesa PIN on your phone to complete the payment',
+        checkoutRequestId: mpesaResponse.CheckoutRequestID,
+        instructions: 'Please check your phone and enter your M-Pesa PIN to complete the payment',
       },
       { status: 200 }
     );
   } catch (error) {
     console.error('M-Pesa initiation error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: 'Failed to initiate M-Pesa payment',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }
@@ -143,113 +134,154 @@ export async function PUT(request: NextRequest) {
     // This endpoint will be called by M-Pesa with payment results
     const body = await request.json();
 
-    // TODO: Verify callback is from M-Pesa (check IP whitelist, etc.)
-
     // Parse M-Pesa callback
     const { Body } = body;
     const { stkCallback } = Body;
-    const { ResultCode, ResultDesc, CallbackMetadata } = stkCallback;
+    
+    if (!stkCallback) {
+      return NextResponse.json({ 
+        ResultCode: 1, 
+        ResultDesc: 'Invalid callback data' 
+      });
+    }
+
+    const { 
+      MerchantRequestID,
+      CheckoutRequestID,
+      ResultCode, 
+      ResultDesc,
+      CallbackMetadata 
+    } = stkCallback;
 
     // Extract transaction details
-    let transactionId = '';
+    let mpesaReceiptNumber = '';
     let amount = 0;
     let phoneNumber = '';
+    let transactionDate = '';
 
     if (CallbackMetadata && CallbackMetadata.Item) {
       CallbackMetadata.Item.forEach((item: any) => {
         if (item.Name === 'MpesaReceiptNumber') {
-          transactionId = item.Value;
+          mpesaReceiptNumber = item.Value;
         }
         if (item.Name === 'Amount') {
-          amount = item.Value;
+          amount = Number(item.Value);
         }
         if (item.Name === 'PhoneNumber') {
           phoneNumber = item.Value;
         }
+        if (item.Name === 'TransactionDate') {
+          transactionDate = item.Value;
+        }
+      });
+    }
+
+    // Find the payment by CheckoutRequestID
+    const payment = await prisma.payment.findFirst({
+      where: {
+        transactionId: CheckoutRequestID,
+        status: PaymentStatus.PENDING,
+      },
+      include: {
+        booking: true,
+      },
+    });
+
+    if (!payment) {
+      console.error('Payment not found for CheckoutRequestID:', CheckoutRequestID);
+      return NextResponse.json({ 
+        ResultCode: 1, 
+        ResultDesc: 'Payment not found' 
       });
     }
 
     if (ResultCode === 0) {
-      // Payment successful
-      // Find the pending payment and update it
-      const payment = await prisma.payment.findFirst({
-        where: {
-          paymentMethod: PaymentMethod.MPESA,
-          status: PaymentStatus.PENDING,
-          amount: amount,
-        },
-        include: {
-          booking: true,
+      // Payment successful ✅
+      
+      // Update payment status
+      await prisma.payment.update({
+        where: { id: payment.id },
+        data: {
+          status: PaymentStatus.COMPLETED,
+          transactionId: mpesaReceiptNumber, // Update with actual M-Pesa receipt number
+          processedAt: new Date(),
+          notes: `M-Pesa payment completed. Receipt: ${mpesaReceiptNumber}, Phone: ${phoneNumber}`,
         },
       });
 
-      if (payment) {
-        // Update payment status
-        await prisma.payment.update({
-          where: { id: payment.id },
-          data: {
-            status: PaymentStatus.COMPLETED,
-            transactionId,
-            processedAt: new Date(),
-            notes: `M-Pesa payment completed. Receipt: ${transactionId}`,
-          },
-        });
+      // Update booking
+      const newPaidAmount = Number(payment.booking.paidAmount) + amount;
+      const totalAmount = Number(payment.booking.totalAmount);
+      const newStatus = newPaidAmount >= totalAmount
+        ? BookingStatus.CONFIRMED
+        : payment.booking.status;
 
-        // Update booking
-        const newPaidAmount = Number(payment.booking.paidAmount) + amount;
-        const newStatus =
-          newPaidAmount >= Number(payment.booking.totalAmount)
-            ? BookingStatus.CONFIRMED
-            : payment.booking.status;
+      await prisma.booking.update({
+        where: { id: payment.bookingId },
+        data: {
+          paidAmount: newPaidAmount,
+          status: newStatus,
+          paymentMethod: PaymentMethod.MPESA,
+        },
+      });
 
-        await prisma.booking.update({
-          where: { id: payment.bookingId },
-          data: {
-            paidAmount: newPaidAmount,
-            status: newStatus,
-          },
-        });
+      // 🎉 Send email notifications
+      const emailParams = {
+        to: payment.booking.guestEmail,
+        bookingNumber: payment.booking.bookingNumber,
+        guestName: `${payment.booking.guestFirstName} ${payment.booking.guestLastName}`,
+        amount: amount,
+        receiptNumber: mpesaReceiptNumber,
+        checkInDate: payment.booking.checkInDate.toISOString(),
+        checkOutDate: payment.booking.checkOutDate.toISOString(),
+      };
 
-        // Log activity
-        await prisma.activityLog.create({
-          data: {
-            action: 'MPESA_COMPLETED',
-            entityType: 'Payment',
-            entityId: payment.id,
-            details: JSON.stringify({
-              transactionId,
-              amount,
-              phoneNumber,
-              bookingNumber: payment.booking.bookingNumber,
-            }),
-          },
-        });
-      }
+      // Send to guest
+      await sendPaymentConfirmationToGuest(emailParams);
+      
+      // Send to organization
+      await sendPaymentNotificationToOrganization(emailParams);
+
+      // Log activity
+      await prisma.activityLog.create({
+        data: {
+          action: 'MPESA_COMPLETED',
+          entityType: 'Payment',
+          entityId: payment.id,
+          details: JSON.stringify({
+            mpesaReceiptNumber,
+            amount,
+            phoneNumber,
+            transactionDate,
+            bookingNumber: payment.booking.bookingNumber,
+            newStatus,
+            emailsSent: true,
+          }),
+        },
+      });
+
     } else {
-      // Payment failed
-      const payment = await prisma.payment.findFirst({
-        where: {
-          paymentMethod: PaymentMethod.MPESA,
-          status: PaymentStatus.PENDING,
-          amount: amount,
+      // Payment failed ❌
+      await prisma.payment.update({
+        where: { id: payment.id },
+        data: {
+          status: PaymentStatus.FAILED,
+          notes: `M-Pesa payment failed: ${ResultDesc} (Code: ${ResultCode})`,
         },
       });
-
-      if (payment) {
-        await prisma.payment.update({
-          where: { id: payment.id },
-          data: {
-            status: PaymentStatus.FAILED,
-            notes: `M-Pesa payment failed: ${ResultDesc}`,
-          },
-        });
-      }
     }
 
     // Acknowledge receipt to M-Pesa
-    return NextResponse.json({ ResultCode: 0, ResultDesc: 'Success' });
+    return NextResponse.json({ 
+      ResultCode: 0, 
+      ResultDesc: 'Accepted' 
+    });
+
   } catch (error) {
     console.error('M-Pesa callback error:', error);
-    return NextResponse.json({ ResultCode: 1, ResultDesc: 'Failed' });
+    return NextResponse.json({ 
+      ResultCode: 1, 
+      ResultDesc: 'Internal server error' 
+    });
   }
 }
