@@ -1,8 +1,11 @@
-// app/api/dashboard/stats/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateUser } from '@/lib/auth-middleware';
 import { BookingStatus, RoomStatus } from '@/lib/constant';
+
+// ✅ ADD THESE - Required for Next.js 15+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,7 +15,7 @@ export async function GET(request: NextRequest) {
       return error;
     }
 
-    // Check if user is admin (optional - depending on your requirements)
+    // Check if user is admin
     if (user!.role !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Unauthorized. Admin access required.' },
@@ -20,15 +23,20 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Date ranges
+    // ✅ FIX: Date ranges - create fresh Date objects for each calculation
+    // (Next.js 15 is stricter about Date mutations)
     const now = new Date();
-    const todayStart = new Date(now.setHours(0, 0, 0, 0));
-    const todayEnd = new Date(now.setHours(23, 59, 59, 999));
     
-    const weekStart = new Date(now);
-    weekStart.setDate(now.getDate() - 7);
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
     
-    const monthStart = new Date(now);
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
+    
+    const weekStart = new Date();
+    weekStart.setDate(weekStart.getDate() - 7);
+    
+    const monthStart = new Date();
     monthStart.setDate(1);
     monthStart.setHours(0, 0, 0, 0);
 
@@ -367,8 +375,24 @@ export async function GET(request: NextRequest) {
     );
   } catch (error) {
     console.error('Get dashboard stats error:', error);
+    
+    // ✅ ADD: Better error logging for debugging
+    if (error instanceof Error) {
+      console.error('Error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+      });
+    }
+    
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: 'Internal server error',
+        // Only show details in development
+        ...(process.env.NODE_ENV === 'development' && {
+          details: error instanceof Error ? error.message : 'Unknown error'
+        })
+      },
       { status: 500 }
     );
   }

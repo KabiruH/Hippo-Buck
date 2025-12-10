@@ -1,6 +1,4 @@
-// app/admin/rooms/components/RoomCard.tsx
-import { useState } from 'react';
-import { useSession } from 'next-auth/react';
+import { useState, useEffect } from 'react';
 import {
   DoorOpen,
   Bed,
@@ -63,8 +61,20 @@ interface RoomCardProps {
 
 export function RoomCard({ room, onEdit }: RoomCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { data: session } = useSession();
-const userRole = (session?.user as any)?.role?.toLowerCase();
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  // Get user role from localStorage
+  useEffect(() => {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        setUserRole(user.role?.toLowerCase());
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+      }
+    }
+  }, []);
 
   const getStatusConfig = (status: string) => {
     switch (status) {

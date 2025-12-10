@@ -1,7 +1,9 @@
-// app/api/auth/login/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { comparePasswords, generateToken } from '@/lib/auth';
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
   try {
@@ -51,8 +53,8 @@ export async function POST(request: NextRequest) {
       data: { lastLogin: new Date() },
     });
 
-    // Generate JWT token
-    const token = generateToken({
+    // Generate JWT token using jose (await since it's now async)
+    const token = await generateToken({
       userId: user.id,
       email: user.email,
       role: user.role,

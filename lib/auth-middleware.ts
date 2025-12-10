@@ -1,76 +1,67 @@
-// lib/auth-middleware.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyToken, extractToken, JWTPayload } from './auth';
-import { UserRole } from './constant';
+import { jwtVerify } from 'jose';
 
-/**
- * Middleware to verify JWT token and attach user to request
- * Checks both Authorization header and cookies for token
- */
-export async function authenticateUser(
-  request: NextRequest
-): Promise<{ user: JWTPayload | null; error: NextResponse | null }> {
-  // First, try to get token from Authorization header
-  const authHeader = request.headers.get('authorization');
-  let token = extractToken(authHeader);
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const secret = new TextEncoder().encode(JWT_SECRET);
 
-  // If no token in Authorization header, check cookies
-  if (!token) {
-    token = request.cookies.get('token')?.value || null;
-  }
+export async function authenticateUser(request: NextRequest) {
+  try {
+    // Get token from Authorization header or cookie
+    const authHeader = request.headers.get('authorization');
+    const cookieToken = request.cookies.get('token')?.value;
+    
+    const token = authHeader?.replace('Bearer ', '') || cookieToken;
 
-  if (!token) {
+    if (!token) {
+      return {
+        user: null,
+        error: NextResponse.json(
+          { error: 'Unauthorized. No token provided.' },
+          { status: 401 }
+        ),
+      };
+    }
+
+    // Verify token using jose
+    const { payload } = await jwtVerify(token, secret);
+
+    return {
+      user: {
+        userId: payload.userId as string,
+        email: payload.email as string,
+        role: payload.role as string,
+      },
+      error: null,
+    };
+  } catch (error) {
+    console.error('Authentication error:', error);
     return {
       user: null,
       error: NextResponse.json(
-        { error: 'Authentication required' },
+        { error: 'Unauthorized. Invalid or expired token.' },
         { status: 401 }
       ),
     };
   }
+}
 
-  const user = verifyToken(token);
-
-  if (!user) {
+// Helper to require admin role
+export async function requireAdmin(request: NextRequest) {
+  const { user, error } = await authenticateUser(request);
+  
+  if (error) {
+    return { user: null, error };
+  }
+  
+  if (user?.role !== 'ADMIN') {
     return {
       user: null,
       error: NextResponse.json(
-        { error: 'Invalid or expired token' },
-        { status: 401 }
+        { error: 'Forbidden. Admin access required.' },
+        { status: 403 }
       ),
     };
   }
-
+  
   return { user, error: null };
-}
-
-/**
- * Middleware to check if user has required role
- */
-export function requireRole(
-  user: JWTPayload,
-  allowedRoles: string[]
-): NextResponse | null {
-  if (!allowedRoles.includes(user.role)) {
-    return NextResponse.json(
-      { error: 'Insufficient permissions' },
-      { status: 403 }
-    );
-  }
-
-  return null;
-}
-
-/**
- * Check if user is admin
- */
-export function isAdmin(user: JWTPayload): boolean {
-  return user.role === UserRole.ADMIN;
-}
-
-/**
- * Check if user is admin or manager
- */
-export function isAdminOrManager(user: JWTPayload): boolean {
-  return user.role === UserRole.ADMIN || user.role === UserRole.MANAGER;
 }

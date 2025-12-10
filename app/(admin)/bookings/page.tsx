@@ -1,4 +1,3 @@
-// app/admin/bookings/page.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -8,6 +7,7 @@ import { BookingStats } from '@/components/bookings/BookingStats';
 import { BookingFilters } from '@/components/bookings/BookingFilters';
 import { BookingCard } from '@/components/bookings/BookingCard';
 import { CreateBookingDialog } from '@/components/bookings/CreateBookingDialog';
+import { Pagination } from '@/components/bookings/Pagination';
 
 interface Booking {
   id: string;
@@ -47,9 +47,18 @@ export default function BookingsPage() {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
   useEffect(() => {
     fetchBookings();
   }, [filterStatus]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterStatus, searchQuery]);
 
   const fetchBookings = async () => {
     try {
@@ -85,38 +94,8 @@ export default function BookingsPage() {
     }
   };
 
-  const handleApprove = async (bookingId: string, bookingNumber: string) => {
-    if (!confirm(`Confirm booking ${bookingNumber}?`)) return;
-
-    setActionLoading(bookingId);
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`/api/bookings/${bookingId}`, {
-        method: 'PATCH',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status: 'CONFIRMED' }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to approve booking');
-      }
-
-      setAlert({
-        type: 'success',
-        message: `Booking ${bookingNumber} has been confirmed!`,
-      });
-      fetchBookings();
-    } catch (error) {
-      setAlert({
-        type: 'error',
-        message: 'Failed to approve booking',
-      });
-    } finally {
-      setActionLoading(null);
-    }
+  const handleApprove = async () => {
+    await fetchBookings();
   };
 
   const handleCancel = async (bookingId: string, bookingNumber: string) => {
@@ -160,6 +139,24 @@ export default function BookingsPage() {
       booking.guestEmail.toLowerCase().includes(searchLower)
     );
   });
+
+  // Pagination calculations
+  const totalItems = filteredBookings.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedBookings = filteredBookings.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to top of bookings list
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleItemsPerPageChange = (items: number) => {
+    setItemsPerPage(items);
+    setCurrentPage(1); // Reset to first page when changing items per page
+  };
 
   const stats = {
     totalBookings: bookings.length,
@@ -237,17 +234,33 @@ export default function BookingsPage() {
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {filteredBookings.map((booking) => (
-              <BookingCard
-                key={booking.id}
-                booking={booking}
-                onApprove={handleApprove}
-                onCancel={handleCancel}
-                isLoading={actionLoading === booking.id}
-              />
-            ))}
-          </div>
+          <>
+            <div className="space-y-3">
+              {paginatedBookings.map((booking) => (
+                <BookingCard
+                  key={booking.id}
+                  booking={booking}
+                  onApprove={handleApprove}
+                  onCancel={handleCancel}
+                  isLoading={actionLoading === booking.id}
+                />
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="mt-6">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalItems={totalItems}
+                  itemsPerPage={itemsPerPage}
+                  onPageChange={handlePageChange}
+                  onItemsPerPageChange={handleItemsPerPageChange}
+                />
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

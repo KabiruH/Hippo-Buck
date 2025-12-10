@@ -1,60 +1,51 @@
-// lib/auth.ts
+import { SignJWT, jwtVerify } from 'jose';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this-in-production';
-const JWT_EXPIRES_IN = '1d'; // Token expires in 1 day
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const secret = new TextEncoder().encode(JWT_SECRET);
 
-export interface JWTPayload {
+// Generate JWT token using jose (returns Promise)
+export async function generateToken(payload: {
   userId: string;
   email: string;
   role: string;
+}): Promise<string> {
+  const token = await new SignJWT(payload)
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('7d') // 7 days
+    .sign(secret);
+
+  return token;
 }
 
-/**
- * Hash a password using bcrypt
- */
+// Verify JWT token using jose
+export async function verifyToken(token: string) {
+  try {
+    const { payload } = await jwtVerify(token, secret);
+    return payload as {
+      userId: string;
+      email: string;
+      role: string;
+      iat: number;
+      exp: number;
+    };
+  } catch (error) {
+    console.error('Token verification failed:', error);
+    return null;
+  }
+}
+
+// Hash password
 export async function hashPassword(password: string): Promise<string> {
   const salt = await bcrypt.genSalt(10);
   return bcrypt.hash(password, salt);
 }
 
-/**
- * Compare password with hashed password
- */
+// Compare passwords
 export async function comparePasswords(
   password: string,
   hashedPassword: string
 ): Promise<boolean> {
   return bcrypt.compare(password, hashedPassword);
-}
-
-/**
- * Generate JWT token
- */
-export function generateToken(payload: JWTPayload): string {
-  return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: JWT_EXPIRES_IN,
-  });
-}
-
-/**
- * Verify JWT token
- */
-export function verifyToken(token: string): JWTPayload | null {
-  try {
-    return jwt.verify(token, JWT_SECRET) as JWTPayload;
-  } catch (error) {
-    return null;
-  }
-}
-
-/**
- * Extract token from Authorization header
- */
-export function extractToken(authHeader: string | null): string | null {
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return null;
-  }
-  return authHeader.substring(7);
 }

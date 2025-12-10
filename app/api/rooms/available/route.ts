@@ -1,7 +1,9 @@
-// app/api/rooms/available/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { findAvailableRooms, calculateRoomPrice } from '@/lib/booking-utils';
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
   try {
@@ -22,29 +24,16 @@ export async function GET(request: NextRequest) {
     const checkOut = new Date(checkOutStr);
 
     if (isNaN(checkIn.getTime()) || isNaN(checkOut.getTime())) {
-      return NextResponse.json(
-        { error: 'Invalid date format' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Invalid date format' }, { status: 400 });
     }
 
     // Find available rooms
-    const availableRooms = await findAvailableRooms(
-      checkIn,
-      checkOut,
-      roomTypeId,
-      prisma
-    );
+    const availableRooms = await findAvailableRooms(checkIn, checkOut, roomTypeId, prisma);
 
     // Calculate pricing for each room type
     const roomsWithPricing = await Promise.all(
       availableRooms.map(async (room) => {
-        const pricing = await calculateRoomPrice(
-          room.roomTypeId,
-          checkIn,
-          checkOut,
-          prisma
-        );
+        const pricing = await calculateRoomPrice(room.roomTypeId, checkIn, checkOut, prisma);
 
         // Get amenities and images
         const amenities = await prisma.roomAmenity.findMany({
@@ -86,20 +75,50 @@ export async function GET(request: NextRequest) {
       })
     );
 
+    // ✅ NEW: Group by room type for easier booking creation
+    const roomTypeMap = new Map<string, any>();
+
+    roomsWithPricing.forEach((item) => {
+      const typeId = item.roomType.id;
+
+      if (!roomTypeMap.has(typeId)) {
+        roomTypeMap.set(typeId, {
+          id: item.roomType.id,
+          name: item.roomType.name,
+          slug: item.roomType.slug,
+          description: item.roomType.description,
+          maxOccupancy: item.roomType.maxOccupancy,
+          bedType: item.roomType.bedType,
+          size: item.roomType.size,
+          pricePerNight: item.pricing.pricePerNight,
+          totalPrice: item.pricing.totalPrice,
+          nights: item.pricing.nights,
+          availableRooms: 0,
+          rooms: [],
+          amenities: item.amenities,
+          images: item.images,
+        });
+      }
+
+      const roomTypeData = roomTypeMap.get(typeId);
+      roomTypeData.availableRooms++;
+      roomTypeData.rooms.push(item.room);
+    });
+
+    const availableRoomTypes = Array.from(roomTypeMap.values());
+
     return NextResponse.json(
       {
         checkIn: checkIn.toISOString(),
         checkOut: checkOut.toISOString(),
-        availableRooms: roomsWithPricing,
+        availableRooms: roomsWithPricing, // Keep for backward compatibility
+        availableRoomTypes, // ✅ NEW: Grouped by room type
         totalAvailable: roomsWithPricing.length,
       },
       { status: 200 }
     );
   } catch (error) {
     console.error('Get available rooms error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

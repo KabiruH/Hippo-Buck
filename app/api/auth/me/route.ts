@@ -1,11 +1,14 @@
-// app/api/auth/me/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateUser } from '@/lib/auth-middleware';
 
+// Add these for Next.js 15+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function GET(request: NextRequest) {
   try {
-    // Authenticate user
+    // Authenticate user using jose (via authenticateUser middleware)
     const { user, error } = await authenticateUser(request);
     
     if (error) {

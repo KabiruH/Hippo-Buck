@@ -1,4 +1,3 @@
-// app/api/bookings/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateUser } from '@/lib/auth-middleware';
@@ -12,7 +11,10 @@ import {
   calculateRoomPrice,
   findAvailableRooms,
 } from '@/lib/booking-utils';
-import { BookingStatus, PaymentMethod } from '@/lib/constant';
+import { BookingStatus, PaymentMethod, RoomStatus } from '@/lib/constant';
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 // Create a new booking (PUBLIC ACCESS for customers)
 export async function POST(request: NextRequest) {
@@ -34,11 +36,12 @@ export async function POST(request: NextRequest) {
       checkOutDate,
       numberOfAdults,
       numberOfChildren = 0,
-      roomIds, // Array of room IDs to book
+      roomIds, // ✅ Keep for backward compatibility
+      roomTypes, // ✅ NEW: Array of { roomTypeId, quantity }
       paymentMethod,
       paidAmount = 0,
       specialRequests,
-      manualConfirm = false, // Staff can manually confirm without payment
+      manualConfirm = false,
     } = body;
 
     // Validation
@@ -50,8 +53,7 @@ export async function POST(request: NextRequest) {
       !checkInDate ||
       !checkOutDate ||
       !numberOfAdults ||
-      !roomIds ||
-      roomIds.length === 0
+      (!roomIds && !roomTypes)
     ) {
       return NextResponse.json(
         { error: 'Missing required fields' },
@@ -71,21 +73,60 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify all rooms are available
-    const availableRooms = await findAvailableRooms(
-      checkIn,
-      checkOut,
-      undefined,
-      prisma
-    );
-    const availableRoomIds = availableRooms.map((r) => r.id);
+    // ✅ Handle room type selection (NEW flow from CreateBookingDialog)
+    let selectedRoomIds: string[] = [];
+    
+    if (roomTypes && Array.isArray(roomTypes)) {
+      // Get available rooms for each room type
+      for (const selectedType of roomTypes) {
+        const { roomTypeId, quantity } = selectedType;
 
-    for (const roomId of roomIds) {
-      if (!availableRoomIds.includes(roomId)) {
-        return NextResponse.json(
-          { error: `Room ${roomId} is not available for selected dates` },
-          { status: 400 }
+        // Find available rooms of this type
+        const availableRooms = await findAvailableRooms(
+          checkIn,
+          checkOut,
+          roomTypeId,
+          prisma
         );
+
+        if (availableRooms.length < quantity) {
+          const roomTypeName = await prisma.roomType.findUnique({
+            where: { id: roomTypeId },
+            select: { name: true },
+          });
+          
+          return NextResponse.json(
+            {
+              error: `Not enough rooms available for ${roomTypeName?.name || 'selected room type'}. Only ${availableRooms.length} available.`,
+            },
+            { status: 400 }
+          );
+        }
+
+        // Take the required quantity
+        const selectedRooms = availableRooms.slice(0, quantity);
+        selectedRoomIds.push(...selectedRooms.map((r) => r.id));
+      }
+    } else if (roomIds && Array.isArray(roomIds)) {
+      // ✅ Backward compatibility - direct room IDs
+      selectedRoomIds = roomIds;
+      
+      // Verify all rooms are available
+      const availableRooms = await findAvailableRooms(
+        checkIn,
+        checkOut,
+        undefined,
+        prisma
+      );
+      const availableRoomIds = availableRooms.map((r) => r.id);
+
+      for (const roomId of selectedRoomIds) {
+        if (!availableRoomIds.includes(roomId)) {
+          return NextResponse.json(
+            { error: `Room ${roomId} is not available for selected dates` },
+            { status: 400 }
+          );
+        }
       }
     }
 
@@ -93,7 +134,7 @@ export async function POST(request: NextRequest) {
     let totalAmount = 0;
     const roomBookingData = [];
 
-    for (const roomId of roomIds) {
+    for (const roomId of selectedRoomIds) {
       const room = await prisma.room.findUnique({
         where: { id: roomId },
         include: { roomType: true },
@@ -130,13 +171,10 @@ export async function POST(request: NextRequest) {
     let bookingStatus: BookingStatus;
 
     if (isStaffBooking && manualConfirm) {
-      // Staff can manually confirm booking regardless of payment
       bookingStatus = BookingStatus.CONFIRMED;
     } else if (paidAmount >= totalAmount) {
-      // Full payment received - auto confirm
       bookingStatus = BookingStatus.CONFIRMED;
     } else {
-      // No payment or partial payment - keep pending
       bookingStatus = BookingStatus.PENDING;
     }
 
@@ -164,7 +202,6 @@ export async function POST(request: NextRequest) {
       },
     };
 
-    // Only add createdById if user is authenticated (staff booking)
     if (isStaffBooking && user) {
       bookingData.createdById = user.userId;
     }
@@ -195,8 +232,8 @@ export async function POST(request: NextRequest) {
 
     // Update room status to RESERVED
     await prisma.room.updateMany({
-      where: { id: { in: roomIds } },
-      data: { status: 'RESERVED' },
+      where: { id: { in: selectedRoomIds } },
+      data: { status: RoomStatus.RESERVED },
     });
 
     // Create customer history record
@@ -214,7 +251,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Log activity only if it's a staff booking
+    // Log activity
     if (isStaffBooking && user) {
       await prisma.activityLog.create({
         data: {
@@ -226,15 +263,16 @@ export async function POST(request: NextRequest) {
             bookingNumber: booking.bookingNumber,
             guestEmail: booking.guestEmail,
             totalAmount: booking.totalAmount,
-            roomCount: roomIds.length,
+            roomCount: selectedRoomIds.length,
             status: bookingStatus,
           }),
         },
       });
     }
 
+    // Send emails
     try {
-      const room = booking.rooms[0]?.room?.roomType?.name || "Room"; // first booked room type
+      const room = booking.rooms[0]?.room?.roomType?.name || "Room";
 
       await sendBookingConfirmationToGuest({
         to: booking.guestEmail,
@@ -293,7 +331,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Get all bookings (PUBLIC ACCESS for booking lookup by customers)
+// Get all bookings
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -303,10 +341,8 @@ export async function GET(request: NextRequest) {
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
 
-    // Check if this is a customer lookup (by email or booking number)
     const isCustomerLookup = email || bookingNumber;
 
-    // If not a customer lookup, require authentication for staff
     if (!isCustomerLookup) {
       const { user, error } = await authenticateUser(request);
       if (error) {
@@ -314,7 +350,6 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Build where clause
     const where: any = {};
 
     if (status) {
