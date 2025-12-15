@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CheckCircle2, AlertCircle, Mail, Lock } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 
 interface LoginFormProps {
   onSuccess?: () => void;
@@ -19,6 +19,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
     email: '',
     password: '',
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -170,7 +171,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
           <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500" />
           <Input
             id="password"
-            type="password"
+            type={showPassword ? 'text' : 'password'}
             placeholder="Enter your password"
             value={formData.password}
             onChange={(e) => handleChange('password', e.target.value)}
@@ -178,6 +179,15 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
             className={`pl-10 bg-zinc-800 border-zinc-700 text-white placeholder:text-gray-500 focus-visible:ring-blue-500 ${errors.password ? 'border-red-500' : ''
               }`}
           />
+          {/* View password button */}
+          <button
+            type="button" // Important: Prevents form submission
+            onClick={() => setShowPassword(prev => !prev)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 hover:text-gray-300 transition-colors"
+            title={showPassword ? 'Hide password' : 'Show password'}
+          >
+            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+          </button>
         </div>
         {errors.password && (
           <p className="text-sm text-red-400">{errors.password}</p>
