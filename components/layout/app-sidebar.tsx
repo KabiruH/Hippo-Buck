@@ -96,14 +96,39 @@ export function AppSidebar() {
     }
   }, []);
 
-  const handleLogout = () => {
-    if (confirm('Are you sure you want to logout?')) {
+const handleLogout = async () => {
+  if (confirm('Are you sure you want to logout?')) {
+    try {
+      // Call logout API
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+
+      // Clear localStorage regardless of API response
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      toast.success('Logged out successfully');
+
+      if (response.ok) {
+        toast.success('Logged out successfully');
+      } else {
+        toast.success('Logged out locally');
+      }
+
+      router.push('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Still logout locally even if API fails
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      toast.success('Logged out locally');
       router.push('/login');
     }
-  };
+  }
+};
 
   // Filter nav items based on user role
   const filteredNavItems = user
