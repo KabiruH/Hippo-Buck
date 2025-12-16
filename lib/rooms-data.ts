@@ -1,3 +1,4 @@
+//lib/rooms-data
 export const roomsData = [
   {
     id: 'standard',

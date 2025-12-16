@@ -6,7 +6,6 @@ import { authenticateUser } from '@/lib/auth-middleware';
 export async function GET(request: NextRequest) {
   try {
     const { user, error } = await authenticateUser(request);
-
     if (error) {
       return error;
     }
@@ -15,8 +14,16 @@ export async function GET(request: NextRequest) {
       select: {
         id: true,
         name: true,
+        slug: true,
+        description: true,
         basePrice: true,
+        singlePriceEA: true,    // ✅ East African Single
+        doublePriceEA: true,    // ✅ East African Double
+        singlePriceIntl: true,  // ✅ International Single (USD)
+        doublePriceIntl: true,  // ✅ International Double (USD)
         maxOccupancy: true,
+        bedType: true,
+        size: true,
       },
       orderBy: {
         name: 'asc',
@@ -28,8 +35,22 @@ export async function GET(request: NextRequest) {
         roomTypes: roomTypes.map((rt) => ({
           id: rt.id,
           name: rt.name,
-          basePrice: Number(rt.basePrice),
+          slug: rt.slug,
+          description: rt.description,
+          basePrice: Number(rt.basePrice), // Keep for backward compatibility
+          pricing: {
+            eastAfrican: {
+              single: Number(rt.singlePriceEA),
+              double: Number(rt.doublePriceEA),
+            },
+            international: {
+              single: Number(rt.singlePriceIntl),
+              double: Number(rt.doublePriceIntl),
+            },
+          },
           capacity: rt.maxOccupancy,
+          bedType: rt.bedType,
+          size: rt.size,
         })),
       },
       { status: 200 }

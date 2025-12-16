@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { findAvailableRooms, calculateRoomPrice } from '@/lib/booking-utils';
+import { findAvailableRooms } from '@/lib/booking-utils';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -11,6 +11,8 @@ export async function GET(request: NextRequest) {
     const checkInStr = searchParams.get('checkIn');
     const checkOutStr = searchParams.get('checkOut');
     const roomTypeId = searchParams.get('roomTypeId') || undefined;
+    const numberOfAdults = parseInt(searchParams.get('numberOfAdults') || '1');
+    const guestCountry = searchParams.get('guestCountry') || 'Kenya';
 
     // Validation
     if (!checkInStr || !checkOutStr) {
@@ -27,13 +29,37 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid date format' }, { status: 400 });
     }
 
+    // Calculate number of nights
+    const nights = Math.ceil(
+      (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    // Determine if East African
+    const eastAfricanCountries = ['Kenya', 'Uganda', 'Tanzania', 'Rwanda', 'Burundi', 'South Sudan'];
+    const isEastAfrican = eastAfricanCountries.includes(guestCountry);
+
     // Find available rooms
     const availableRooms = await findAvailableRooms(checkIn, checkOut, roomTypeId, prisma);
 
     // Calculate pricing for each room type
     const roomsWithPricing = await Promise.all(
       availableRooms.map(async (room) => {
-        const pricing = await calculateRoomPrice(room.roomTypeId, checkIn, checkOut, prisma);
+        // ✅ Get price from database based on occupancy and region
+        let pricePerNight: number;
+        
+        if (isEastAfrican) {
+          // East African rates (KES)
+          pricePerNight = numberOfAdults === 1 
+            ? Number(room.roomType.singlePriceEA) 
+            : Number(room.roomType.doublePriceEA);
+        } else {
+          // International rates (USD)
+          pricePerNight = numberOfAdults === 1 
+            ? Number(room.roomType.singlePriceIntl) 
+            : Number(room.roomType.doublePriceIntl);
+        }
+
+        const totalPrice = pricePerNight * nights;
 
         // Get amenities and images
         const amenities = await prisma.roomAmenity.findMany({
@@ -62,9 +88,9 @@ export async function GET(request: NextRequest) {
             size: room.roomType.size,
           },
           pricing: {
-            pricePerNight: pricing.pricePerNight,
-            totalPrice: pricing.totalPrice,
-            nights: pricing.nights,
+            pricePerNight,
+            totalPrice,
+            nights,
           },
           amenities: amenities.map((a) => a.amenity),
           images: images.map((img) => ({
@@ -75,12 +101,11 @@ export async function GET(request: NextRequest) {
       })
     );
 
-    // ✅ NEW: Group by room type for easier booking creation
+    // Group by room type for easier booking creation
     const roomTypeMap = new Map<string, any>();
 
     roomsWithPricing.forEach((item) => {
       const typeId = item.roomType.id;
-
       if (!roomTypeMap.has(typeId)) {
         roomTypeMap.set(typeId, {
           id: item.roomType.id,
@@ -111,8 +136,11 @@ export async function GET(request: NextRequest) {
       {
         checkIn: checkIn.toISOString(),
         checkOut: checkOut.toISOString(),
+        nights,
+        isEastAfrican,
+        numberOfAdults,
         availableRooms: roomsWithPricing, // Keep for backward compatibility
-        availableRoomTypes, // ✅ NEW: Grouped by room type
+        availableRoomTypes, // Grouped by room type
         totalAvailable: roomsWithPricing.length,
       },
       { status: 200 }

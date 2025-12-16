@@ -130,8 +130,7 @@ function BookingContent() {
       // Step 2: Map frontend room selection to database room type
       const roomTypeMapping: Record<string, string> = {
         'standard-room': 'Standard Room',
-        'deluxe-lake-view': 'Superior Room (Pool View)',
-        'superior-lake-view': 'Superior Room (Garden View)',
+        'Superior Room': 'Superior Room (Pool View)',
         'superior-garden': 'Superior Room (Garden View)',
       };
       

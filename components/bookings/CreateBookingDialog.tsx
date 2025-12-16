@@ -55,6 +55,7 @@ export function CreateBookingDialog({
   const [guestLastName, setGuestLastName] = useState('');
   const [guestEmail, setGuestEmail] = useState('');
   const [guestPhone, setGuestPhone] = useState('');
+  const [guestCountry, setGuestCountry] = useState('Kenya'); // ✅ Added country
 
   // Booking Details
   const [checkInDate, setCheckInDate] = useState<Date | undefined>(undefined);
@@ -66,7 +67,11 @@ export function CreateBookingDialog({
   const [availableRoomTypes, setAvailableRoomTypes] = useState<RoomType[]>([]);
   const [selectedRoomTypes, setSelectedRoomTypes] = useState<Array<{ roomTypeId: string; quantity: number }>>([]);
 
-  // Check availability when dates change
+  // ✅ Calculate if East African for currency display
+  const eastAfricanCountries = ['Kenya', 'Uganda', 'Tanzania', 'Rwanda', 'Burundi', 'South Sudan'];
+  const isEastAfrican = eastAfricanCountries.includes(guestCountry);
+
+  // Check availability when dates, adults, OR country changes
   useEffect(() => {
     if (checkInDate && checkOutDate) {
       checkAvailability();
@@ -74,15 +79,16 @@ export function CreateBookingDialog({
       setAvailableRoomTypes([]);
       setSelectedRoomTypes([]);
     }
-  }, [checkInDate, checkOutDate]);
+  }, [checkInDate, checkOutDate, numberOfAdults, guestCountry]); // ✅ Added guestCountry
 
   const checkAvailability = async () => {
     if (!checkInDate || !checkOutDate) return;
 
     setIsCheckingAvailability(true);
     try {
+      // ✅ Include numberOfAdults AND guestCountry for correct pricing
       const response = await fetch(
-        `/api/rooms/available?checkIn=${checkInDate.toISOString()}&checkOut=${checkOutDate.toISOString()}`
+        `/api/rooms/available?checkIn=${checkInDate.toISOString()}&checkOut=${checkOutDate.toISOString()}&numberOfAdults=${numberOfAdults}&guestCountry=${guestCountry}`
       );
 
       if (!response.ok) {
@@ -148,6 +154,11 @@ export function CreateBookingDialog({
         throw new Error('Please select at least one room');
       }
 
+      // ✅ Validate guest count (max 2 per room)
+      if (numberOfAdults + numberOfChildren > 2) {
+        throw new Error('Maximum 2 guests per room allowed');
+      }
+
       const token = localStorage.getItem('token');
       const response = await fetch('/api/bookings', {
         method: 'POST',
@@ -160,6 +171,7 @@ export function CreateBookingDialog({
           guestLastName,
           guestEmail,
           guestPhone,
+          guestCountry, // ✅ Include country
           checkInDate: checkInDate.toISOString(),
           checkOutDate: checkOutDate.toISOString(),
           numberOfAdults,
@@ -193,6 +205,7 @@ export function CreateBookingDialog({
     setGuestLastName('');
     setGuestEmail('');
     setGuestPhone('');
+    setGuestCountry('Kenya');
     setCheckInDate(undefined);
     setCheckOutDate(undefined);
     setNumberOfAdults(1);
@@ -209,16 +222,29 @@ export function CreateBookingDialog({
     }, 0);
   };
 
+  // ✅ Format currency based on guest region
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-KE', {
-      style: 'currency',
-      currency: 'KES',
-      minimumFractionDigits: 0,
-    }).format(amount);
+    if (isEastAfrican) {
+      return new Intl.NumberFormat('en-KE', {
+        style: 'currency',
+        currency: 'KES',
+        minimumFractionDigits: 0,
+      }).format(amount);
+    } else {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 0,
+      }).format(amount);
+    }
   };
 
   const numberOfNights =
     availableRoomTypes.length > 0 ? availableRoomTypes[0].nights : 0;
+
+  // ✅ Calculate total guests and validate
+  const totalGuests = numberOfAdults + numberOfChildren;
+  const canAddChildren = totalGuests < 2;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -288,6 +314,30 @@ export function CreateBookingDialog({
                 />
               </div>
             </div>
+            {/* ✅ Country Selector */}
+            <div className="space-y-2">
+              <Label htmlFor="country">
+                Country <span className="text-red-500">*</span>
+              </Label>
+              <select
+                id="country"
+                value={guestCountry}
+                onChange={(e) => setGuestCountry(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              >
+                <option value="Kenya">Kenya</option>
+                <option value="Uganda">Uganda</option>
+                <option value="Tanzania">Tanzania</option>
+                <option value="Rwanda">Rwanda</option>
+                <option value="Burundi">Burundi</option>
+                <option value="South Sudan">South Sudan</option>
+                <option value="Other">Other (Non-East African)</option>
+              </select>
+              <p className="text-xs text-gray-500">
+                {isEastAfrican ? '🇰🇪 East African rates apply (KES)' : '🌍 International rates apply (USD)'}
+              </p>
+            </div>
           </div>
 
           {/* Booking Details */}
@@ -348,14 +398,27 @@ export function CreateBookingDialog({
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="adults">Number of Adults</Label>
+                <Label htmlFor="adults">
+                  Number of Adults <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="adults"
                   type="number"
                   min="1"
+                  max="2"
                   value={numberOfAdults}
-                  onChange={(e) => setNumberOfAdults(parseInt(e.target.value) || 1)}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value) || 1;
+                    if (value + numberOfChildren <= 2) {
+                      setNumberOfAdults(value);
+                    } else {
+                      toast.error('Maximum 2 guests per room');
+                    }
+                  }}
                 />
+                <p className="text-xs text-gray-500">
+                  {numberOfAdults === 1 ? 'Single occupancy pricing' : 'Double occupancy pricing'}
+                </p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="children">Number of Children</Label>
@@ -363,9 +426,21 @@ export function CreateBookingDialog({
                   id="children"
                   type="number"
                   min="0"
+                  max={2 - numberOfAdults}
                   value={numberOfChildren}
-                  onChange={(e) => setNumberOfChildren(parseInt(e.target.value) || 0)}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value) || 0;
+                    if (numberOfAdults + value <= 2) {
+                      setNumberOfChildren(value);
+                    } else {
+                      toast.error('Maximum 2 guests per room');
+                    }
+                  }}
+                  disabled={!canAddChildren}
                 />
+                <p className="text-xs text-gray-500">
+                  {totalGuests}/2 guests selected
+                </p>
               </div>
             </div>
 
@@ -451,6 +526,9 @@ export function CreateBookingDialog({
                                 </p>
                                 <p className="text-lg font-semibold text-blue-600 mt-2">
                                   {formatCurrency(roomType.pricePerNight)} / night
+                                  <span className="text-xs font-normal text-gray-500 ml-2">
+                                    ({numberOfAdults === 1 ? 'single' : 'double'} occupancy)
+                                  </span>
                                 </p>
                               </div>
 

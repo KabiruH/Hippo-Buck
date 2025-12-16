@@ -15,6 +15,8 @@ import {
   ChevronDown,
   ChevronUp,
   CreditCard,
+  LogOut,
+  Pencil,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,11 +27,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import EditBookingModal from './EditBookingModal';
 
 interface Booking {
   id: string;
@@ -45,6 +58,7 @@ interface Booking {
   totalAmount: number;
   paidAmount: number;
   status: string;
+  specialRequests?: string;
   rooms: Array<{
     room: {
       roomNumber: string;
@@ -68,9 +82,14 @@ interface BookingCardProps {
 
 export function BookingCard({ booking, onApprove, onCancel, isLoading }: BookingCardProps) {
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [showCheckoutDialog, setShowCheckoutDialog] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [paymentTab, setPaymentTab] = useState<'manual' | 'stk'>('manual');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showCheckinDialog, setShowCheckinDialog] = useState(false);
+const [isCheckingIn, setIsCheckingIn] = useState(false);
 
   // Manual Payment State
   const [paymentMethod, setPaymentMethod] = useState<'MPESA' | 'CASH'>('MPESA');
@@ -132,6 +151,7 @@ export function BookingCard({ booking, onApprove, onCancel, isLoading }: Booking
   const guestName = `${booking.guestFirstName} ${booking.guestLastName}`;
   const remainingBalance = Number(booking.totalAmount) - Number(booking.paidAmount);
   const hasOutstandingBalance = remainingBalance > 0;
+  const canEdit = ['PENDING', 'CONFIRMED'].includes(booking.status);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-KE', {
@@ -154,13 +174,88 @@ export function BookingCard({ booking, onApprove, onCancel, isLoading }: Booking
   };
 
   const handleCompletePaymentClick = () => {
-    // Pre-fill with remaining balance
     setPaymentAmount(remainingBalance.toString());
     setStkAmount(remainingBalance.toString());
     setShowPaymentDialog(true);
   };
 
-  // Manual Payment Recording
+  // Add after handleCheckout function (around line 198)
+const handleCheckin = async () => {
+  setIsCheckingIn(true);
+
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`/api/bookings/${booking.id}/checkin`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to check-in');
+    }
+
+    toast.success('Check-in successful!', {
+      description: `${guestName} has been checked in. Room(s) set to occupied.`,
+    });
+
+    setShowCheckinDialog(false);
+
+    if (onApprove) {
+      onApprove(booking.id);
+    }
+  } catch (error) {
+    console.error('Check-in error:', error);
+    toast.error('Failed to check-in', {
+      description: error instanceof Error ? error.message : 'Unknown error',
+    });
+  } finally {
+    setIsCheckingIn(false);
+  }
+};
+
+  const handleCheckout = async () => {
+    setIsCheckingOut(true);
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/bookings/${booking.id}/checkout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to checkout');
+      }
+
+      toast.success('Check-out successful!', {
+        description: `${guestName} has been checked out. Room(s) set to cleaning.`,
+      });
+
+      setShowCheckoutDialog(false);
+
+      if (onApprove) {
+        onApprove(booking.id);
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
+      toast.error('Failed to checkout', {
+        description: error instanceof Error ? error.message : 'Unknown error',
+      });
+    } finally {
+      setIsCheckingOut(false);
+    }
+  };
+
   const handleManualPayment = async () => {
     setIsProcessing(true);
 
@@ -192,8 +287,6 @@ export function BookingCard({ booking, onApprove, onCancel, isLoading }: Booking
       });
 
       setShowPaymentDialog(false);
-
-      // Reset form
       setPaymentAmount((Number(booking.totalAmount) - Number(booking.paidAmount)).toString());
       setMpesaCode('');
       setNotes('');
@@ -211,7 +304,6 @@ export function BookingCard({ booking, onApprove, onCancel, isLoading }: Booking
     }
   };
 
-  // STK Push Payment
   const handleStkPush = async () => {
     setIsProcessing(true);
 
@@ -320,6 +412,20 @@ export function BookingCard({ booking, onApprove, onCancel, isLoading }: Booking
 
             {/* Quick Actions */}
             <div className="flex gap-2">
+              {/* Edit Button */}
+              {canEdit && (
+                <Button
+                  onClick={() => setShowEditModal(true)}
+                  disabled={isLoading}
+                  size="sm"
+                  variant="outline"
+                  className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                  title="Edit Booking"
+                >
+                  <Pencil className="w-4 h-4" />
+                </Button>
+              )}
+
               {/* Pending Bookings */}
               {booking.status === 'PENDING' && (
                 <>
@@ -345,8 +451,44 @@ export function BookingCard({ booking, onApprove, onCancel, isLoading }: Booking
                 </>
               )}
 
-              {/* Confirmed/Checked-in Bookings with Outstanding Balance */}
-              {(booking.status === 'CONFIRMED' || booking.status === 'CHECKED_IN') && (
+              {/* Confirmed Bookings */}
+              {booking.status === 'CONFIRMED' && (
+                <>
+                 <Button
+      onClick={() => setShowCheckinDialog(true)}
+      disabled={isLoading}
+      size="sm"
+      className="bg-indigo-600 hover:bg-indigo-700 text-white"
+      title="Check In Guest"
+    >
+      <DoorOpen className="w-4 h-4" />
+    </Button>
+                  {hasOutstandingBalance && (
+                    <Button
+                      onClick={handleCompletePaymentClick}
+                      disabled={isLoading}
+                      size="sm"
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                      title="Complete Payment"
+                    >
+                      <CreditCard className="w-4 h-4" />
+                    </Button>
+                  )}
+                  <Button
+                    onClick={() => onCancel(booking.id, booking.bookingNumber)}
+                    disabled={isLoading}
+                    size="sm"
+                    variant="outline"
+                    className="border-red-300 text-red-600 hover:bg-red-50"
+                    title="Cancel Booking"
+                  >
+                    <XCircle className="w-4 h-4" />
+                  </Button>
+                </>
+              )}
+
+              {/* Checked-In Bookings */}
+              {booking.status === 'CHECKED_IN' && (
                 <>
                   {hasOutstandingBalance && (
                     <Button
@@ -359,6 +501,15 @@ export function BookingCard({ booking, onApprove, onCancel, isLoading }: Booking
                       <CreditCard className="w-4 h-4" />
                     </Button>
                   )}
+                  <Button
+                    onClick={() => setShowCheckoutDialog(true)}
+                    disabled={isLoading || hasOutstandingBalance}
+                    size="sm"
+                    className="bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-50"
+                    title={hasOutstandingBalance ? "Clear outstanding balance first" : "Check Out"}
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </Button>
                   <Button
                     onClick={() => onCancel(booking.id, booking.bookingNumber)}
                     disabled={isLoading}
@@ -505,6 +656,45 @@ export function BookingCard({ booking, onApprove, onCancel, isLoading }: Booking
                 </div>
               )}
             </div>
+
+            {/* Edit Button in Expanded View */}
+            {canEdit && (
+              <Button
+                onClick={() => setShowEditModal(true)}
+                disabled={isLoading}
+                variant="outline"
+                className="w-full border-gray-300 text-gray-700 hover:bg-gray-50"
+              >
+                <Pencil className="w-4 h-4 mr-2" />
+                Edit Booking Details
+              </Button>
+            )}
+
+            {/* Checkout Button in Expanded View */}
+            {booking.status === 'CHECKED_IN' && (
+              <Button
+                onClick={() => setShowCheckoutDialog(true)}
+                disabled={isLoading || hasOutstandingBalance}
+                className="w-full bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-50"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                {hasOutstandingBalance 
+                  ? `Clear Balance (${formatCurrency(remainingBalance)}) Before Checkout`
+                  : 'Check Out Guest'
+                }
+              </Button>
+            )}
+
+            {booking.status === 'CONFIRMED' && (
+  <Button
+    onClick={() => setShowCheckinDialog(true)}
+    disabled={isLoading}
+    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
+  >
+    <DoorOpen className="w-4 h-4 mr-2" />
+    Check In Guest
+  </Button>
+)}
 
             {/* Complete Payment Button in Expanded View */}
             {hasOutstandingBalance &&
@@ -698,6 +888,109 @@ export function BookingCard({ booking, onApprove, onCancel, isLoading }: Booking
           </Tabs>
         </DialogContent>
       </Dialog>
+      
+{/* Check-in Confirmation Dialog */}
+<AlertDialog open={showCheckinDialog} onOpenChange={setShowCheckinDialog}>
+  <AlertDialogContent>
+    <AlertDialogHeader>
+      <AlertDialogTitle>Confirm Check-In</AlertDialogTitle>
+      <AlertDialogDescription>
+        Are you sure you want to check in <strong>{guestName}</strong> for booking{' '}
+        <strong>{booking.bookingNumber}</strong>?
+        <br />
+        <br />
+        The room(s) will be set to <strong>OCCUPIED</strong> status after check-in.
+      </AlertDialogDescription>
+    </AlertDialogHeader>
+    <AlertDialogFooter>
+      <AlertDialogCancel disabled={isCheckingIn}>Cancel</AlertDialogCancel>
+      <AlertDialogAction
+        onClick={handleCheckin}
+        disabled={isCheckingIn}
+        className="bg-indigo-600 hover:bg-indigo-700"
+      >
+        {isCheckingIn ? (
+          <>
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            Checking In...
+          </>
+        ) : (
+          <>
+            <DoorOpen className="w-4 h-4 mr-2" />
+            Confirm Check-In
+          </>
+        )}
+      </AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>
+
+      {/* Checkout Confirmation Dialog */}
+      <AlertDialog open={showCheckoutDialog} onOpenChange={setShowCheckoutDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Check-Out</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to check out <strong>{guestName}</strong> from booking{' '}
+              <strong>{booking.bookingNumber}</strong>?
+              <br />
+              <br />
+              The room(s) will be set to <strong>CLEANING</strong> status after checkout.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isCheckingOut}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleCheckout}
+              disabled={isCheckingOut}
+              className="bg-purple-600 hover:bg-purple-700"
+            >
+              {isCheckingOut ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Checking Out...
+                </>
+              ) : (
+                <>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Confirm Check-Out
+                </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Edit Booking Modal */}
+{showEditModal && (
+  <EditBookingModal
+    isOpen={showEditModal}
+    onClose={() => setShowEditModal(false)}
+    bookingData={{
+      bookingId: booking.id,
+      bookingNumber: booking.bookingNumber,
+      guest: {
+        firstName: booking.guestFirstName,
+        lastName: booking.guestLastName,
+        email: booking.guestEmail,
+        phone: booking.guestPhone,
+      },
+      checkIn: booking.checkInDate,
+      checkOut: booking.checkOutDate,
+      totalGuests: booking.numberOfAdults + booking.numberOfChildren,
+      numberOfAdults: booking.numberOfAdults, // ✅ Add this
+      numberOfChildren: booking.numberOfChildren, // ✅ Add this
+      numberOfRooms: booking.rooms.length,
+      specialRequests: booking.specialRequests,
+      status: booking.status,
+    }}
+    onBookingUpdated={() => {
+      if (onApprove) {
+        onApprove(booking.id);
+      }
+    }}
+  />
+)}
     </>
   );
 }

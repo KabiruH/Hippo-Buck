@@ -17,6 +17,8 @@ export default function StructuredData() {
       addressRegion: 'Homa Bay County',
       addressCountry: 'KE',
     },
+
+    
     geo: {
       '@type': 'GeoCoordinates',
       latitude: -0.5273,
