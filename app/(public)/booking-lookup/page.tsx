@@ -202,6 +202,8 @@ export default function BookingLookupPage() {
     checkIn: booking.checkInDate,
     checkOut: booking.checkOutDate,
     totalGuests: booking.numberOfAdults + booking.numberOfChildren,
+    numberOfAdults: booking.numberOfAdults, 
+  numberOfChildren: booking.numberOfChildren, 
     numberOfRooms: booking.rooms.length,
     specialRequests: booking.specialRequests,
     status: booking.status,

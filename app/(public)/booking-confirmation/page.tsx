@@ -18,6 +18,8 @@ interface BookingData {
   checkOut: string;
   numberOfRooms: number;
   totalGuests: number;
+  numberOfAdults: number; // ✅ Add this
+  numberOfChildren: number; // ✅ Add this
   nights: number;
   pricePerNight: number;
   totalPrice: number;
@@ -79,29 +81,31 @@ function BookingConfirmationContent() {
       const data = await response.json();
       // Transform API data to match BookingData interface
       // You may need to adjust this based on your actual API response
-      const transformedData: BookingData = {
-        bookingId: data.booking.id,
-        bookingNumber: data.booking.bookingNumber,
-        room: data.booking.rooms[0]?.room.roomType.name || 'N/A',
-        region: 'eastAfrican', // You may need to store this
-        bedType: 'single', // You may need to store this
-        checkIn: data.booking.checkInDate,
-        checkOut: data.booking.checkOutDate,
-        numberOfRooms: data.booking.rooms.length,
-        totalGuests: data.booking.numberOfAdults + data.booking.numberOfChildren,
-        nights: Math.ceil((new Date(data.booking.checkOutDate).getTime() - new Date(data.booking.checkInDate).getTime()) / (1000 * 60 * 60 * 24)),
-        pricePerNight: 0, // Calculate from totalAmount / nights if needed
-        totalPrice: Number(data.booking.totalAmount),
-        currency: 'KES',
-        guest: {
-          firstName: data.booking.guestFirstName,
-          lastName: data.booking.guestLastName,
-          email: data.booking.guestEmail,
-          phone: data.booking.guestPhone,
-        },
-        specialRequests: data.booking.specialRequests,
-        status: data.booking.status,
-      };
+    const transformedData: BookingData = {
+  bookingId: data.booking.id,
+  bookingNumber: data.booking.bookingNumber,
+  room: data.booking.rooms[0]?.room.roomType.name || 'N/A',
+  region: 'eastAfrican', // You may need to store this
+  bedType: 'single', // You may need to store this
+  checkIn: data.booking.checkInDate,
+  checkOut: data.booking.checkOutDate,
+  numberOfRooms: data.booking.rooms.length,
+  totalGuests: data.booking.numberOfAdults + data.booking.numberOfChildren,
+  numberOfAdults: data.booking.numberOfAdults, 
+  numberOfChildren: data.booking.numberOfChildren, 
+  nights: Math.ceil((new Date(data.booking.checkOutDate).getTime() - new Date(data.booking.checkInDate).getTime()) / (1000 * 60 * 60 * 24)),
+  pricePerNight: 0, // Calculate from totalAmount / nights if needed
+  totalPrice: Number(data.booking.totalAmount),
+  currency: 'KES',
+  guest: {
+    firstName: data.booking.guestFirstName,
+    lastName: data.booking.guestLastName,
+    email: data.booking.guestEmail,
+    phone: data.booking.guestPhone,
+  },
+  specialRequests: data.booking.specialRequests,
+  status: data.booking.status,
+};
       setBookingData(transformedData);
     } catch (error) {
       console.error('Error fetching booking:', error);
