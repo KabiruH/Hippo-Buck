@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
           roomId: { in: roomIds },
           booking: {
             checkInDate: { lte: today },
-            checkOutDate: { gte: today },
+            checkOutDate: { gt: today },
             status: {
               in: ['CONFIRMED', 'CHECKED_IN', 'PENDING'],
             },
