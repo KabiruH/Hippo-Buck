@@ -1,21 +1,8 @@
 // lib/email-service.ts
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
-// Create reusable transporter
-const smtpPort = parseInt(process.env.SMTP_PORT || '465');
-
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: smtpPort,
-  secure: smtpPort === 465, // true for 465, false for other ports
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-  tls: {
-    rejectUnauthorized: false,
-  }
-});
+// Create Resend instance
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 interface PaymentConfirmationParams {
   to: string;
@@ -55,8 +42,8 @@ export async function sendBookingConfirmationToGuest(params: BookingConfirmation
       ? '<p style="background: #fef3c7; padding: 15px; border-radius: 8px; border-left: 4px solid #f59e0b;"><strong>Payment Pending:</strong> Please complete payment to confirm your booking.</p>'
       : '<p style="background: #d1fae5; padding: 15px; border-radius: 8px; border-left: 4px solid #10b981;"><strong>Payment Confirmed!</strong> Your booking is confirmed.</p>';
 
-    await transporter.sendMail({
-      from: `"Hotel Hippo Buck" <${process.env.SMTP_USER}>`,
+    await resend.emails.send({
+      from: 'Hotel Hippo Buck <bookings@hippobuck.com>',
       to: params.to,
       subject: `Booking Confirmation - ${params.bookingNumber}`,
       html: `
@@ -168,14 +155,15 @@ export async function sendBookingConfirmationToGuest(params: BookingConfirmation
     console.log('✅ Booking confirmation email sent to guest:', params.to);
   } catch (error) {
     console.error('❌ Error sending booking confirmation email to guest:', error);
+    throw error;
   }
 }
 
 // Send booking notification to organization
 export async function sendBookingNotificationToOrganization(params: BookingConfirmationParams) {
   try {
-    await transporter.sendMail({
-      from: `"Booking System" <${process.env.SMTP_USER}>`,
+    await resend.emails.send({
+      from: 'Booking System <bookings@hippobuck.com>',
       to: process.env.ORGANIZATION_EMAIL || 'info@hotelhippobuck.com',
       subject: `🏨 New Booking - ${params.bookingNumber}`,
       html: `
@@ -224,14 +212,15 @@ export async function sendBookingNotificationToOrganization(params: BookingConfi
     console.log('✅ Booking notification email sent to organization');
   } catch (error) {
     console.error('❌ Error sending booking notification to organization:', error);
+    throw error;
   }
 }
 
 // Send payment confirmation to guest (when payment is received)
 export async function sendPaymentConfirmationToGuest(params: PaymentConfirmationParams) {
   try {
-    await transporter.sendMail({
-      from: `"Hotel Hippo Buck" <${process.env.SMTP_USER}>`,
+    await resend.emails.send({
+      from: 'Hotel Hippo Buck <bookings@hippobuck.com>',
       to: params.to,
       subject: `Payment Confirmed - Booking ${params.bookingNumber}`,
       html: `
@@ -265,14 +254,15 @@ export async function sendPaymentConfirmationToGuest(params: PaymentConfirmation
     console.log('✅ Payment confirmation email sent to guest:', params.to);
   } catch (error) {
     console.error('❌ Error sending payment confirmation email to guest:', error);
+    throw error;
   }
 }
 
 // Send payment notification to organization
 export async function sendPaymentNotificationToOrganization(params: PaymentConfirmationParams) {
   try {
-    await transporter.sendMail({
-      from: `"Booking System" <${process.env.SMTP_USER}>`,
+    await resend.emails.send({
+      from: 'Booking System <bookings@hippobuck.com>',
       to: process.env.ORGANIZATION_EMAIL || 'info@hotelhippobuck.com',
       subject: `💰 New Payment Received - ${params.bookingNumber}`,
       html: `
@@ -303,5 +293,6 @@ export async function sendPaymentNotificationToOrganization(params: PaymentConfi
     console.log('✅ Payment notification email sent to organization');
   } catch (error) {
     console.error('❌ Error sending payment notification to organization:', error);
+    throw error;
   }
 }
