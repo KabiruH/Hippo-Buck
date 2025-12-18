@@ -8,6 +8,7 @@ import { RoomStats } from '@/components/rooms/RoomStats';
 import { RoomFilters } from '@/components/rooms/RoomFilters';
 import { RoomCard } from '@/components/rooms/RoomCard';
 import { CreateRoomDialog } from '@/components/rooms/CreateRoomDialog';
+import RoomStatusManager from '@/components/rooms/RoomStatusManager';
 
 interface Room {
   id: string;
@@ -131,6 +132,10 @@ export default function RoomsPage() {
     );
   }
 
+  function fetchDashboardData(): void {
+    throw new Error('Function not implemented.');
+  }
+
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto">
@@ -182,6 +187,11 @@ export default function RoomsPage() {
           onRoomTypeChange={setFilterRoomType}
           onSearchChange={setSearchQuery}
         />
+
+    {/* Room status Management */}
+          <div className="bg-white rounded-lg shadow p-6 lg:col-span-3">
+  <RoomStatusManager onStatusChange={fetchDashboardData} />
+</div>
 
         {/* Rooms List */}
         {filteredRooms.length === 0 ? (

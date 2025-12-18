@@ -400,7 +400,7 @@ function BookingConfirmationContent() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {/* M-Pesa */}
-                  <button
+                  {/* <button
                     onClick={() => setSelectedPaymentMethod('MPESA')}
                     className={`w-full p-4 rounded-lg border-2 transition-all ${selectedPaymentMethod === 'MPESA'
                       ? 'border-blue-500 bg-blue-50'
@@ -417,7 +417,7 @@ function BookingConfirmationContent() {
                         <CheckCircle className="w-5 h-5 text-blue-600" />
                       )}
                     </div>
-                  </button>
+                  </button> */}
 
                   {/* Cash */}
 
@@ -441,7 +441,7 @@ function BookingConfirmationContent() {
                   </button>
 
                   {/* Card */}
-                  <button
+                  {/* <button
                     onClick={() => setSelectedPaymentMethod('CARD')}
                     className={`w-full p-4 rounded-lg border-2 transition-all ${selectedPaymentMethod === 'CARD'
                       ? 'border-blue-500 bg-blue-50'
@@ -458,7 +458,7 @@ function BookingConfirmationContent() {
                         <CheckCircle className="w-5 h-5 text-blue-600" />
                       )}
                     </div>
-                  </button>
+                  </button> */}
 
                   <Button
                     onClick={handlePayment}

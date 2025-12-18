@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import RoomStatusManager from '@/components/rooms/RoomStatusManager';
 
 // Types
 interface BookingStats {
@@ -513,6 +514,10 @@ export default function AdminDashboardPage() {
               )}
             </div>
           </div>
+    {/* Room status Management */}
+          <div className="bg-white rounded-lg shadow p-6 lg:col-span-3">
+  <RoomStatusManager onStatusChange={fetchDashboardData} />
+</div>
         </div>
       </div>
     </div>
