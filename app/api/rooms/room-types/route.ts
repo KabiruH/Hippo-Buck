@@ -16,7 +16,6 @@ export async function GET(request: NextRequest) {
         name: true,
         slug: true,
         description: true,
-        basePrice: true,
         singlePriceEA: true,    // ✅ East African Single
         doublePriceEA: true,    // ✅ East African Double
         singlePriceIntl: true,  // ✅ International Single (USD)
@@ -37,7 +36,6 @@ export async function GET(request: NextRequest) {
           name: rt.name,
           slug: rt.slug,
           description: rt.description,
-          basePrice: Number(rt.basePrice), // Keep for backward compatibility
           pricing: {
             eastAfrican: {
               single: Number(rt.singlePriceEA),

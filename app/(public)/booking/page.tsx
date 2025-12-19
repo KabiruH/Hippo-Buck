@@ -43,6 +43,16 @@ function BookingContent() {
   const [phone, setPhone] = useState('');
   const [specialRequests, setSpecialRequests] = useState('');
 
+  // ✅ Auto-switch bed type based on guest count
+  useEffect(() => {
+    const totalGuestsPerRoom = adultsPerRoom + childrenPerRoom;
+    
+    // Auto-switch to double if more than 2 guests per room
+    if (totalGuestsPerRoom > 1 && bedType === 'single') {
+      setBedType('double');
+    }
+  }, [adultsPerRoom, childrenPerRoom, bedType]);
+
   // Calculate nights and total price
   useEffect(() => {
     if (checkIn && checkOut && selectedRoom) {
@@ -75,7 +85,8 @@ function BookingContent() {
   const currencySymbol = region === 'eastAfrican' ? 'KES ' : '$';
 
   const totalGuests = (adultsPerRoom + childrenPerRoom) * numberOfRooms;
-  const maxGuestsPerRoom = selectedRoomData?.features.maxGuests || 2;
+  // ✅ Dynamic max guests based on bed type
+  const maxGuestsPerRoom = bedType === 'single' ? 1 : 2;
   const totalGuestsPerRoom = adultsPerRoom + childrenPerRoom;
   const isGuestCapacityValid = totalGuestsPerRoom <= maxGuestsPerRoom;
 
@@ -181,9 +192,11 @@ function BookingContent() {
         checkOutDate: checkOut,
         numberOfAdults: adultsPerRoom * numberOfRooms,
         numberOfChildren: childrenPerRoom * numberOfRooms,
-        roomIds: actualRoomIds, // ✅ Now using actual database room IDs
-        paidAmount: 0, // Book now, pay later - STATUS WILL BE PENDING
+        roomIds: actualRoomIds,
+        paidAmount: 0,
         specialRequests: specialRequests || null,
+        guestType: region === 'eastAfrican' ? 'EAST_AFRICAN' : 'INTERNATIONAL',
+        occupancyType: bedType === 'single' ? 'SINGLE' : 'DOUBLE',
       };
 
       console.log('Booking payload:', bookingPayload);
@@ -356,13 +369,26 @@ function BookingContent() {
                         <Label htmlFor="bedType" className="text-gray-900 text-sm md:text-base">
                           Bed Type
                         </Label>
-                        <Select value={bedType} onValueChange={setBedType}>
+                        <Select 
+                          value={bedType} 
+                          onValueChange={(value) => {
+                            const totalGuestsPerRoom = adultsPerRoom + childrenPerRoom;
+                            
+                            // Prevent switching to single if more than 2 guests
+                            if (value === 'single' && totalGuestsPerRoom > 1) {
+                              toast('Cannot select Single Bed with more than 1 guest per room');
+                              return;
+                            }
+                            
+                            setBedType(value);
+                          }}
+                        >
                           <SelectTrigger className="bg-gray-50 border-gray-300 text-gray-900">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="single">Single Bed</SelectItem>
-                            <SelectItem value="double">Double Bed</SelectItem>
+                            <SelectItem value="single">Single Bed (Max 1 guest)</SelectItem>
+                            <SelectItem value="double">Double Bed (Max 2 guests)</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -409,11 +435,9 @@ function BookingContent() {
                         <Label className="text-gray-900 text-sm md:text-base">
                           Guests Per Room
                         </Label>
-                        {selectedRoomData && (
-                          <span className="text-xs text-gray-600">
-                            Max {maxGuestsPerRoom} per room
-                          </span>
-                        )}
+                        <span className="text-xs text-gray-600">
+                          Max {bedType === 'single' ? '1' : '2'} per room ({bedType === 'single' ? 'Single' : 'Double'} Bed)
+                        </span>
                       </div>
 
                       {/* Adults */}

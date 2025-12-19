@@ -10,6 +10,17 @@ type RoomWithTypeAndBookings = Room & {
   }>;
 };
 
+// Guest and Occupancy Types
+export enum GuestType {
+  EAST_AFRICAN = 'EAST_AFRICAN',
+  INTERNATIONAL = 'INTERNATIONAL',
+}
+
+export enum OccupancyType {
+  SINGLE = 'SINGLE',
+  DOUBLE = 'DOUBLE',
+}
+
 /**
  * Generate a unique booking number
  * Format: HHB-YYYYMMDD-XXXX
@@ -66,6 +77,37 @@ export function formatCurrency(amount: number): string {
 }
 
 /**
+ * Format currency in USD
+ */
+export function formatCurrencyUSD(amount: number): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
+/**
+ * Get base price based on guest type and occupancy
+ */
+export function getBasePrice(
+  roomType: RoomType,
+  guestType: GuestType,
+  occupancyType: OccupancyType
+): number {
+  if (guestType === GuestType.EAST_AFRICAN) {
+    return occupancyType === OccupancyType.SINGLE
+      ? Number(roomType.singlePriceEA)
+      : Number(roomType.doublePriceEA);
+  } else {
+    return occupancyType === OccupancyType.SINGLE
+      ? Number(roomType.singlePriceIntl)
+      : Number(roomType.doublePriceIntl);
+  }
+}
+
+/**
  * Check if a date falls within a seasonal pricing period
  */
 export async function getApplicablePricing(
@@ -101,18 +143,37 @@ export async function calculateRoomPrice(
   roomTypeId: string,
   checkIn: Date,
   checkOut: Date,
+  guestType: GuestType,
+  occupancyType: OccupancyType,
   prisma: PrismaClient
-): Promise<{ pricePerNight: number; totalPrice: number; nights: number }> {
+): Promise<{ 
+  pricePerNight: number; 
+  totalPrice: number; 
+  nights: number;
+  currency: string;
+  guestType: GuestType;
+  occupancyType: OccupancyType;
+}> {
+  // Add better error logging
+  console.log('Fetching room type:', roomTypeId);
+  
   const roomType = await prisma.roomType.findUnique({
     where: { id: roomTypeId },
   });
 
   if (!roomType) {
-    throw new Error('Room type not found');
+    console.error('Room type not found for ID:', roomTypeId);
+    throw new Error(`Room type not found for ID: ${roomTypeId}`);
   }
 
+  console.log('Room type found:', roomType.name);
+
   const nights = calculateNights(checkIn, checkOut);
-  let pricePerNight = Number(roomType.basePrice);
+  
+  // Get the appropriate base price based on guest type and occupancy
+  let pricePerNight = getBasePrice(roomType, guestType, occupancyType);
+
+  console.log('Base price calculated:', pricePerNight);
 
   // Check for seasonal pricing
   const seasonalPricing = await getApplicablePricing(
@@ -131,11 +192,15 @@ export async function calculateRoomPrice(
   }
 
   const totalPrice = pricePerNight * nights;
+  const currency = guestType === GuestType.EAST_AFRICAN ? 'KES' : 'USD';
 
   return {
     pricePerNight,
     totalPrice,
     nights,
+    currency,
+    guestType,
+    occupancyType,
   };
 }
 
@@ -150,7 +215,7 @@ export async function findAvailableRooms(
 ): Promise<RoomWithTypeAndBookings[]> {
   const whereClause: Prisma.RoomWhereInput = {
     isActive: true,
-    status: { in: [RoomStatus.AVAILABLE, RoomStatus.RESERVED] }, // CHANGED: Use constants instead of strings
+    status: { in: [RoomStatus.AVAILABLE, RoomStatus.RESERVED] },
   };
 
   if (roomTypeId) {
@@ -164,7 +229,7 @@ export async function findAvailableRooms(
       bookings: {
         where: {
           booking: {
-            status: { in: [BookingStatus.CONFIRMED, BookingStatus.CHECKED_IN] }, // CHANGED: Use constants instead of strings
+            status: { in: [BookingStatus.CONFIRMED, BookingStatus.CHECKED_IN] },
             OR: [
               {
                 // Existing booking overlaps with requested dates
@@ -231,7 +296,6 @@ export function formatBookingStatus(status: string): {
   label: string;
   color: string;
 } {
-  // CHANGED: Use constants for type safety
   const statusMap: Record<string, { label: string; color: string }> = {
     [BookingStatus.PENDING]: { label: 'Pending', color: 'yellow' },
     [BookingStatus.CONFIRMED]: { label: 'Confirmed', color: 'green' },
@@ -247,17 +311,24 @@ export function formatBookingStatus(status: string): {
 /**
  * Generate email content for booking confirmation
  */
-export function generateBookingConfirmationEmail(booking: Booking & { 
-  guestFirstName: string; 
-  guestLastName: string; 
-  numberOfAdults: number; 
-  numberOfChildren: number; 
-}): {
+export function generateBookingConfirmationEmail(
+  booking: Booking & { 
+    guestFirstName: string; 
+    guestLastName: string; 
+    numberOfAdults: number; 
+    numberOfChildren: number; 
+  },
+  currency: string = 'KES'
+): {
   subject: string;
   html: string;
   text: string;
 } {
   const subject = `Booking Confirmation - ${booking.bookingNumber} - Hotel Hippo Buck`;
+  
+  const formattedAmount = currency === 'KES' 
+    ? formatCurrency(Number(booking.totalAmount))
+    : formatCurrencyUSD(Number(booking.totalAmount));
   
   const html = `
     <!DOCTYPE html>
@@ -306,7 +377,7 @@ export function generateBookingConfirmationEmail(booking: Booking & {
             </div>
             <div class="detail-row">
               <span><strong>Total Amount:</strong></span>
-              <span>KES ${booking.totalAmount}</span>
+              <span>${formattedAmount}</span>
             </div>
           </div>
           
@@ -349,7 +420,7 @@ export function generateBookingConfirmationEmail(booking: Booking & {
     - Check-in: ${new Date(booking.checkInDate).toLocaleDateString('en-GB')}
     - Check-out: ${new Date(booking.checkOutDate).toLocaleDateString('en-GB')}
     - Guests: ${booking.numberOfAdults} Adults${booking.numberOfChildren > 0 ? `, ${booking.numberOfChildren} Children` : ''}
-    - Total Amount: KES ${booking.totalAmount}
+    - Total Amount: ${formattedAmount}
     
     Check-in time: 2:00 PM
     Check-out time: 11:00 AM

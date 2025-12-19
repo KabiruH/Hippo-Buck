@@ -30,7 +30,16 @@ interface Room {
     name: string;
     slug: string;
     description: string | null;
-    basePrice: number;
+    pricing: {
+      eastAfrican: {
+        single: number;
+        double: number;
+      };
+      international: {
+        single: number;
+        double: number;
+      };
+    };
     maxOccupancy: number;
     bedType: string | null;
     size: string | null;
@@ -128,6 +137,14 @@ export function RoomCard({ room, onEdit }: RoomCardProps) {
     }).format(amount);
   };
 
+  const formatCurrencyUSD = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -196,8 +213,8 @@ export function RoomCard({ room, onEdit }: RoomCardProps) {
 
             <div className="flex items-start gap-3">
               <div className="text-right">
-                <p className="text-2xl font-bold text-gray-900">
-                  {formatCurrency(room.roomType.basePrice)}
+                <p className="text-xl font-bold text-gray-900">
+                  {formatCurrency(room.roomType.pricing.eastAfrican.single)} - {formatCurrencyUSD(room.roomType.pricing.international.double)}
                 </p>
                 <p className="text-xs text-gray-600">per night</p>
               </div>
@@ -250,6 +267,37 @@ export function RoomCard({ room, onEdit }: RoomCardProps) {
               {room.roomType.description && (
                 <p className="text-gray-700 text-sm">{room.roomType.description}</p>
               )}
+
+              {/* Pricing Breakdown */}
+              <div className="border-t border-gray-200 pt-4">
+                <h4 className="text-sm font-semibold text-gray-900 mb-3 uppercase tracking-wider">
+                  Pricing
+                </h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-xs text-blue-600 font-medium mb-2">East African Residents</p>
+                    <div className="space-y-1">
+                      <p className="text-sm text-gray-700">
+                        Single: <span className="font-semibold">{formatCurrency(room.roomType.pricing.eastAfrican.single)}</span>
+                      </p>
+                      <p className="text-sm text-gray-700">
+                        Double: <span className="font-semibold">{formatCurrency(room.roomType.pricing.eastAfrican.double)}</span>
+                      </p>
+                    </div>
+                  </div>
+                  <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-xs text-green-600 font-medium mb-2">International Guests</p>
+                    <div className="space-y-1">
+                      <p className="text-sm text-gray-700">
+                        Single: <span className="font-semibold">{formatCurrencyUSD(room.roomType.pricing.international.single)}</span>
+                      </p>
+                      <p className="text-sm text-gray-700">
+                        Double: <span className="font-semibold">{formatCurrencyUSD(room.roomType.pricing.international.double)}</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               {/* Current Booking */}
               {room.currentBooking && (

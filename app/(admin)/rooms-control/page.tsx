@@ -20,7 +20,16 @@ interface Room {
     name: string;
     slug: string;
     description: string | null;
-    basePrice: number;
+    pricing: {
+      eastAfrican: {
+        single: number;
+        double: number;
+      };
+      international: {
+        single: number;
+        double: number;
+      };
+    };
     maxOccupancy: number;
     bedType: string | null;
     size: string | null;

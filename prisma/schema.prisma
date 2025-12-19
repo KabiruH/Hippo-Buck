@@ -30,7 +30,6 @@ model RoomType {
   name            String            @unique
   slug            String            @unique
   description     String            @db.NVarChar(Max)
-  basePrice       Decimal           @db.Decimal(10, 2)
   maxOccupancy    Int
   bedType         String
   size            Float?

@@ -12,6 +12,7 @@ import {
   findAvailableRooms,
 } from '@/lib/booking-utils';
 import { BookingStatus, PaymentMethod, RoomStatus } from '@/lib/constant';
+import { GuestType, OccupancyType } from '@/lib/booking-utils';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -42,6 +43,8 @@ export async function POST(request: NextRequest) {
       paidAmount = 0,
       specialRequests,
       manualConfirm = false,
+      guestType,
+      occupancyType,
     } = body;
 
     // Validation
@@ -75,7 +78,7 @@ export async function POST(request: NextRequest) {
 
     // ✅ Handle room type selection (NEW flow from CreateBookingDialog)
     let selectedRoomIds: string[] = [];
-    
+
     if (roomTypes && Array.isArray(roomTypes)) {
       // Get available rooms for each room type
       for (const selectedType of roomTypes) {
@@ -94,7 +97,7 @@ export async function POST(request: NextRequest) {
             where: { id: roomTypeId },
             select: { name: true },
           });
-          
+
           return NextResponse.json(
             {
               error: `Not enough rooms available for ${roomTypeName?.name || 'selected room type'}. Only ${availableRooms.length} available.`,
@@ -110,7 +113,7 @@ export async function POST(request: NextRequest) {
     } else if (roomIds && Array.isArray(roomIds)) {
       // ✅ Backward compatibility - direct room IDs
       selectedRoomIds = roomIds;
-      
+
       // Verify all rooms are available
       const availableRooms = await findAvailableRooms(
         checkIn,
@@ -147,10 +150,23 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      // Determine guest type based on country if not provided
+      const finalGuestType = guestType ||
+        (guestCountry && ['KE', 'UG', 'TZ', 'RW', 'BI', 'SS'].includes(guestCountry.toUpperCase())
+          ? GuestType.EAST_AFRICAN
+          : GuestType.INTERNATIONAL);
+
+      // Determine occupancy type based on number of adults if not provided
+      const finalOccupancyType = occupancyType ||
+        (numberOfAdults === 1 ? OccupancyType.SINGLE : OccupancyType.DOUBLE);
+
+      // ✅ Use finalGuestType and finalOccupancyType instead of guestType and occupancyType
       const pricing = await calculateRoomPrice(
         room.roomTypeId,
         checkIn,
         checkOut,
+        finalGuestType,      // ✅ Changed from guestType
+        finalOccupancyType,  // ✅ Changed from occupancyType
         prisma
       );
 

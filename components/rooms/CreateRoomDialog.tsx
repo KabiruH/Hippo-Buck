@@ -25,7 +25,16 @@ import { Plus, Loader2 } from 'lucide-react';
 interface RoomType {
   id: string;
   name: string;
-  basePrice: number;
+  pricing: {
+    eastAfrican: {
+      single: number;
+      double: number;
+    };
+    international: {
+      single: number;
+      double: number;
+    };
+  };
   capacity: number;
 }
 
@@ -203,13 +212,13 @@ return (
               <SelectTrigger className="bg-gray-50 border border-blue-600 text-gray-900">
                 <SelectValue placeholder="Select room type" />
               </SelectTrigger>
-              <SelectContent className="bg-white border border-gray-200 text-gray-900">
-                {roomTypes.map((type) => (
-                  <SelectItem key={type.id} value={type.id} className="text-gray-900">
-                    {type.name} - {formatCurrency(type.basePrice)}/night
-                  </SelectItem>
-                ))}
-              </SelectContent>
+             <SelectContent className="bg-white border border-gray-200 text-gray-900">
+  {roomTypes.map((type) => (
+    <SelectItem key={type.id} value={type.id} className="text-gray-900">
+      {type.name} - {formatCurrency(type.pricing.eastAfrican.single)} - {formatCurrency(type.pricing.international.double)}/night
+    </SelectItem>
+  ))}
+</SelectContent>
             </Select>
           )}
           {selectedRoomType && (

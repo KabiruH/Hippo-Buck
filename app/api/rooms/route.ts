@@ -115,7 +115,16 @@ export async function GET(request: NextRequest) {
         name: room.roomType.name,
         slug: room.roomType.slug,
         description: room.roomType.description,
-        basePrice: Number(room.roomType.basePrice),
+pricing: {
+  eastAfrican: {
+    single: Number(room.roomType.singlePriceEA),
+    double: Number(room.roomType.doublePriceEA),
+  },
+  international: {
+    single: Number(room.roomType.singlePriceIntl),
+    double: Number(room.roomType.doublePriceIntl),
+  },
+},
         maxOccupancy: room.roomType.maxOccupancy,
         bedType: room.roomType.bedType,
         size: room.roomType.size,
@@ -256,23 +265,32 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(
-      {
-        message: 'Room created successfully',
-        room: {
-          id: newRoom.id,
-          roomNumber: newRoom.roomNumber,
-          floor: newRoom.floor,
-          status: newRoom.status,
-          notes: newRoom.notes, // Changed from description to notes
-          roomType: {
-            id: newRoom.roomType.id,
-            name: newRoom.roomType.name,
-            basePrice: Number(newRoom.roomType.basePrice),
+  {
+    message: 'Room created successfully',
+    room: {
+      id: newRoom.id,
+      roomNumber: newRoom.roomNumber,
+      floor: newRoom.floor,
+      status: newRoom.status,
+      notes: newRoom.notes,
+      roomType: {
+        id: newRoom.roomType.id,
+        name: newRoom.roomType.name,
+        pricing: {
+          eastAfrican: {
+            single: Number(newRoom.roomType.singlePriceEA),  // ✅ Changed from room to newRoom
+            double: Number(newRoom.roomType.doublePriceEA),  // ✅ Changed from room to newRoom
+          },
+          international: {
+            single: Number(newRoom.roomType.singlePriceIntl),  // ✅ Changed from room to newRoom
+            double: Number(newRoom.roomType.doublePriceIntl),  // ✅ Changed from room to newRoom
           },
         },
       },
-      { status: 201 }
-    );
+    },
+  },
+  { status: 201 }
+);
   } catch (error) {
     console.error('Create room error:', error);
     return NextResponse.json(
