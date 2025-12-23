@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { authenticateUser } from '@/lib/auth-middleware';
 import {
   sendBookingConfirmationToGuest,
-  sendBookingNotificationToOrganization
+  sendBookingNotificationToHotel  // ✅ Changed from sendBookingNotificationToOrganization
 } from '@/lib/email-service';
 import {
   generateBookingNumber,
@@ -286,49 +286,52 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Send emails
+    // ✅ Send emails to BOTH guest and hotel
     try {
       const room = booking.rooms[0]?.room?.roomType?.name || "Room";
+      const nights = booking.rooms[0]?.numberOfNights ?? 1;
+      const totalAmountNumber = booking.totalAmount?.toNumber?.() ?? 0;
 
+      // Email parameters - shared between both emails
+      const emailParams = {
+        bookingNumber: booking.bookingNumber,
+        guestName: `${booking.guestFirstName} ${booking.guestLastName}`,
+        guestEmail: booking.guestEmail,
+        guestPhone: booking.guestPhone,
+        roomType: room,
+        numberOfRooms: booking.rooms.length,
+        numberOfGuests: booking.numberOfAdults + booking.numberOfChildren,
+        numberOfAdults: booking.numberOfAdults,      // ✅ NEW
+        numberOfChildren: booking.numberOfChildren,  // ✅ NEW
+        checkInDate: booking.checkInDate.toISOString(),
+        checkOutDate: booking.checkOutDate.toISOString(),
+        nights,
+        totalAmount: totalAmountNumber,
+        paymentMethod: booking.paymentMethod ?? undefined,
+        specialRequests: booking.specialRequests ?? undefined,
+        status: booking.status,
+      };
+
+      // 1. Send confirmation email to guest
       await sendBookingConfirmationToGuest({
         to: booking.guestEmail,
-        bookingNumber: booking.bookingNumber,
-        guestName: `${booking.guestFirstName} ${booking.guestLastName}`,
-        guestEmail: booking.guestEmail,
-        guestPhone: booking.guestPhone,
-        roomType: room,
-        numberOfRooms: booking.rooms.length,
-        numberOfGuests: booking.numberOfAdults + booking.numberOfChildren,
-        checkInDate: booking.checkInDate.toString(),
-        checkOutDate: booking.checkOutDate.toString(),
-        nights: booking.rooms[0]?.numberOfNights ?? 1,
-        totalAmount: booking.totalAmount?.toNumber?.() ?? 0,
-        paymentMethod: booking.paymentMethod ?? undefined,
-        specialRequests: booking.specialRequests ?? undefined,
-        status: booking.status,
+        ...emailParams,
       });
 
-      await sendBookingNotificationToOrganization({
-        to: process.env.ORGANIZATION_EMAIL ?? "info@hotelhippobuck.com",
-        bookingNumber: booking.bookingNumber,
-        guestName: `${booking.guestFirstName} ${booking.guestLastName}`,
-        guestEmail: booking.guestEmail,
-        guestPhone: booking.guestPhone,
-        roomType: room,
-        numberOfRooms: booking.rooms.length,
-        numberOfGuests: booking.numberOfAdults + booking.numberOfChildren,
-        checkInDate: booking.checkInDate.toString(),
-        checkOutDate: booking.checkOutDate.toString(),
-        nights: booking.rooms[0]?.numberOfNights ?? 1,
-        totalAmount: booking.totalAmount?.toNumber?.() ?? 0,
-        paymentMethod: booking.paymentMethod ?? undefined,
-        specialRequests: booking.specialRequests ?? undefined,
-        status: booking.status,
+      console.log('✅ Booking confirmation email sent to guest:', booking.guestEmail);
+
+      // 2. Send notification email to hotel (booking@hippobuck.com)
+      await sendBookingNotificationToHotel({
+        to: booking.guestEmail, // This parameter is ignored, hotel email is hardcoded
+        ...emailParams,
       });
 
-      console.log("📧 Booking emails sent successfully");
-    } catch (err) {
-      console.error("❌ Error sending booking email(s):", err);
+      console.log('✅ Booking notification email sent to hotel: bookings@hippobuck.com');
+
+    } catch (emailError) {
+      // Don't fail the booking if emails fail
+      console.error('❌ Error sending booking email(s):', emailError);
+      // Booking still succeeds even if emails fail
     }
 
     return NextResponse.json(

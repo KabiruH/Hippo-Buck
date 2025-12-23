@@ -25,7 +25,7 @@ function BookingContent() {
 
   const [selectedRoom, setSelectedRoom] = useState(roomIdFromUrl || '');
   const [region, setRegion] = useState('eastAfrican');
-  const [bedType, setBedType] = useState('single');
+  const [bedType, setBedType] = useState<'single' | 'double'>('single');
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
   const [numberOfRooms, setNumberOfRooms] = useState(1);
@@ -43,13 +43,30 @@ function BookingContent() {
   const [phone, setPhone] = useState('');
   const [specialRequests, setSpecialRequests] = useState('');
 
+  // ✅ FIXED: Correct capacity limits
+  // Single Bed: 1 adult + 1 child (under 5 years, free)
+  // Double Bed: 2 adults + 1 child (under 5 years, free)
+  // Children 5+ are charged as adults
+  const getMaxCapacity = (type: 'single' | 'double') => {
+    if (type === 'single') {
+      return { maxAdults: 1, maxChildren: 1 };
+    }
+    return { maxAdults: 2, maxChildren: 1 };
+  };
+
+  const capacity = getMaxCapacity(bedType);
+  const isAdultCapacityValid = adultsPerRoom <= capacity.maxAdults;
+  const isChildCapacityValid = childrenPerRoom <= capacity.maxChildren;
+  const isGuestCapacityValid = isAdultCapacityValid && isChildCapacityValid;
+
   // ✅ Auto-switch bed type based on guest count
   useEffect(() => {
-    const totalGuestsPerRoom = adultsPerRoom + childrenPerRoom;
-    
-    // Auto-switch to double if more than 2 guests per room
-    if (totalGuestsPerRoom > 1 && bedType === 'single') {
-      setBedType('double');
+    // Auto-switch to double if capacity exceeded for single bed
+    if (bedType === 'single') {
+      if (adultsPerRoom > 1 || childrenPerRoom > 1) {
+        setBedType('double');
+        toast('Switched to Double Bed to accommodate guests');
+      }
     }
   }, [adultsPerRoom, childrenPerRoom, bedType]);
 
@@ -85,16 +102,12 @@ function BookingContent() {
   const currencySymbol = region === 'eastAfrican' ? 'KES ' : '$';
 
   const totalGuests = (adultsPerRoom + childrenPerRoom) * numberOfRooms;
-  // ✅ Dynamic max guests based on bed type
-  const maxGuestsPerRoom = bedType === 'single' ? 1 : 2;
-  const totalGuestsPerRoom = adultsPerRoom + childrenPerRoom;
-  const isGuestCapacityValid = totalGuestsPerRoom <= maxGuestsPerRoom;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!isGuestCapacityValid) {
-      toast(`Maximum ${maxGuestsPerRoom} guests per room allowed!`);
+      toast.error(`Capacity exceeded! ${bedType === 'single' ? 'Single bed: 1 adult + 1 child (under 5)' : 'Double bed: 2 adults + 1 child (under 5)'}`);
       return;
     }
 
@@ -249,7 +262,7 @@ function BookingContent() {
       
     } catch (error) {
       console.error('Booking error:', error);
-      toast(error instanceof Error ? error.message : 'Failed to create booking. Please try again.');
+      toast.error(error instanceof Error ? error.message : 'Failed to create booking. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -264,8 +277,10 @@ function BookingContent() {
   };
 
   const incrementAdults = () => {
-    if (adultsPerRoom + childrenPerRoom < maxGuestsPerRoom) {
+    if (adultsPerRoom < capacity.maxAdults) {
       setAdultsPerRoom(adultsPerRoom + 1);
+    } else {
+      toast.error(`Maximum ${capacity.maxAdults} adults per room`);
     }
   };
 
@@ -274,8 +289,10 @@ function BookingContent() {
   };
 
   const incrementChildren = () => {
-    if (adultsPerRoom + childrenPerRoom < maxGuestsPerRoom) {
+    if (childrenPerRoom < capacity.maxChildren) {
       setChildrenPerRoom(childrenPerRoom + 1);
+    } else {
+      toast.error(`Maximum ${capacity.maxChildren} ${capacity.maxChildren === 1 ? 'child' : 'children'} per room`);
     }
   };
 
@@ -371,12 +388,10 @@ function BookingContent() {
                         </Label>
                         <Select 
                           value={bedType} 
-                          onValueChange={(value) => {
-                            const totalGuestsPerRoom = adultsPerRoom + childrenPerRoom;
-                            
-                            // Prevent switching to single if more than 2 guests
-                            if (value === 'single' && totalGuestsPerRoom > 1) {
-                              toast('Cannot select Single Bed with more than 1 guest per room');
+                          onValueChange={(value: 'single' | 'double') => {
+                            // Prevent switching to single if capacity exceeded
+                            if (value === 'single' && (adultsPerRoom > 1 || childrenPerRoom > 1)) {
+                              toast.error('Cannot select Single Bed - too many guests (Max: 1 adult + 1 child under 5)');
                               return;
                             }
                             
@@ -387,8 +402,12 @@ function BookingContent() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="single">Single Bed (Max 1 guest)</SelectItem>
-                            <SelectItem value="double">Double Bed (Max 2 guests)</SelectItem>
+                            <SelectItem value="single">
+                              Single Bed (1 adult + 1 child under 5)
+                            </SelectItem>
+                            <SelectItem value="double">
+                              Double Bed (2 adults + 1 child under 5)
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -436,13 +455,27 @@ function BookingContent() {
                           Guests Per Room
                         </Label>
                         <span className="text-xs text-gray-600">
-                          Max {bedType === 'single' ? '1' : '2'} per room ({bedType === 'single' ? 'Single' : 'Double'} Bed)
+                          {bedType === 'single' 
+                            ? 'Max: 1 adult + 1 child (under 5)' 
+                            : 'Max: 2 adults + 1 child (under 5)'}
                         </span>
+                      </div>
+
+                      {/* Important Note about Children */}
+                      <div className="bg-amber-50 border border-amber-200 rounded p-3">
+                        <p className="text-xs text-amber-800">
+                          <strong>Note:</strong> Only children under 5 years stay free. Children 5+ are charged.
+                        </p>
                       </div>
 
                       {/* Adults */}
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-700 text-sm">Adults (18+)</span>
+                        <span className="text-gray-700 text-sm">
+                          Adults (18+ or children 5+)
+                          <span className="text-xs text-gray-500 ml-1">
+                            (Max {capacity.maxAdults})
+                          </span>
+                        </span>
                         <div className="flex items-center gap-3">
                           <Button
                             type="button"
@@ -454,13 +487,15 @@ function BookingContent() {
                           >
                             <Minus className="w-3 h-3" />
                           </Button>
-                          <span className="text-gray-900 w-8 text-center font-semibold">
+                          <span className={`w-8 text-center font-semibold ${
+                            !isAdultCapacityValid ? 'text-red-600' : 'text-gray-900'
+                          }`}>
                             {adultsPerRoom}
                           </span>
                           <Button
                             type="button"
                             onClick={incrementAdults}
-                            disabled={totalGuestsPerRoom >= maxGuestsPerRoom}
+                            disabled={adultsPerRoom >= capacity.maxAdults}
                             variant="outline"
                             size="icon"
                             className="bg-white border-gray-300 text-gray-900 hover:bg-gray-100 h-8 w-8"
@@ -472,7 +507,12 @@ function BookingContent() {
 
                       {/* Children */}
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-700 text-sm">Children (0-17)</span>
+                        <span className="text-gray-700 text-sm">
+                          Children (0-4 years, free)
+                          <span className="text-xs text-gray-500 ml-1">
+                            (Max {capacity.maxChildren})
+                          </span>
+                        </span>
                         <div className="flex items-center gap-3">
                           <Button
                             type="button"
@@ -484,13 +524,15 @@ function BookingContent() {
                           >
                             <Minus className="w-3 h-3" />
                           </Button>
-                          <span className="text-gray-900 w-8 text-center font-semibold">
+                          <span className={`w-8 text-center font-semibold ${
+                            !isChildCapacityValid ? 'text-red-600' : 'text-gray-900'
+                          }`}>
                             {childrenPerRoom}
                           </span>
                           <Button
                             type="button"
                             onClick={incrementChildren}
-                            disabled={totalGuestsPerRoom >= maxGuestsPerRoom}
+                            disabled={childrenPerRoom >= capacity.maxChildren}
                             variant="outline"
                             size="icon"
                             className="bg-white border-gray-300 text-gray-900 hover:bg-gray-100 h-8 w-8"
@@ -501,9 +543,16 @@ function BookingContent() {
                       </div>
 
                       {!isGuestCapacityValid && (
-                        <p className="text-red-500 text-xs">
-                          Maximum {maxGuestsPerRoom} guests per room exceeded!
-                        </p>
+                        <div className="pt-2 border-t border-red-200 bg-red-50 p-3 rounded">
+                          <p className="text-red-600 text-xs font-medium">
+                            ⚠️ Capacity exceeded for {bedType === 'single' ? 'Single' : 'Double'} bed!
+                          </p>
+                          <p className="text-red-500 text-xs mt-1">
+                            {bedType === 'single' 
+                              ? 'Single bed allows: 1 adult + 1 child (under 5 years)'
+                              : 'Double bed allows: 2 adults + 1 child (under 5 years)'}
+                          </p>
+                        </div>
                       )}
 
                       <div className="pt-2 border-t border-blue-200">
@@ -512,6 +561,10 @@ function BookingContent() {
                           <span className="text-blue-600 font-semibold">
                             {totalGuests} {totalGuests === 1 ? 'Guest' : 'Guests'} across {numberOfRooms} {numberOfRooms === 1 ? 'room' : 'rooms'}
                           </span>
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          {adultsPerRoom * numberOfRooms} {adultsPerRoom * numberOfRooms === 1 ? 'adult' : 'adults'}
+                          {childrenPerRoom > 0 && ` + ${childrenPerRoom * numberOfRooms} ${childrenPerRoom * numberOfRooms === 1 ? 'child' : 'children'} (free, under 5)`}
                         </div>
                       </div>
                     </div>

@@ -383,8 +383,8 @@ export function generateBookingConfirmationEmail(
           
           <h3>Important Information</h3>
           <ul>
-            <li>Check-in time: 2:00 PM</li>
-            <li>Check-out time: 11:00 AM</li>
+            <li>Check-in time: 10:00 AM</li>
+            <li>Check-out time: 10:00 AM</li>
             <li>Please present this confirmation code at reception</li>
             <li>Valid ID required at check-in</li>
           </ul>
@@ -422,8 +422,8 @@ export function generateBookingConfirmationEmail(
     - Guests: ${booking.numberOfAdults} Adults${booking.numberOfChildren > 0 ? `, ${booking.numberOfChildren} Children` : ''}
     - Total Amount: ${formattedAmount}
     
-    Check-in time: 2:00 PM
-    Check-out time: 11:00 AM
+    Check-in time: 10:00 AM
+    Check-out time: 10:00 AM
     
     Please present this confirmation code at reception.
     
