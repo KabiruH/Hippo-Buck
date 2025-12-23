@@ -6,7 +6,7 @@ import { PaymentStatus, PaymentMethod, BookingStatus } from '@/lib/constant';
 import { mpesaService } from '@/lib/mpesa'; 
 import { 
   sendPaymentConfirmationToGuest, 
-  sendPaymentNotificationToOrganization 
+  sendPaymentNotificationToHotel 
 } from '@/lib/email-service';
 
 
@@ -240,7 +240,7 @@ export async function PUT(request: NextRequest) {
       await sendPaymentConfirmationToGuest(emailParams);
       
       // Send to organization
-      await sendPaymentNotificationToOrganization(emailParams);
+      await sendPaymentNotificationToHotel(emailParams);
 
       // Log activity
       await prisma.activityLog.create({
