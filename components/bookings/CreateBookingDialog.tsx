@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Plus, X, Loader2, Users, Bed, Maximize2 } from 'lucide-react';
+import { CalendarIcon, Plus, X, Loader2, Users, Bed, Maximize2, Minus } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -55,11 +55,12 @@ export function CreateBookingDialog({
   const [guestLastName, setGuestLastName] = useState('');
   const [guestEmail, setGuestEmail] = useState('');
   const [guestPhone, setGuestPhone] = useState('');
-  const [guestCountry, setGuestCountry] = useState('Kenya'); // ✅ Added country
+  const [guestCountry, setGuestCountry] = useState('Kenya');
 
   // Booking Details
   const [checkInDate, setCheckInDate] = useState<Date | undefined>(undefined);
   const [checkOutDate, setCheckOutDate] = useState<Date | undefined>(undefined);
+  const [occupancyType, setOccupancyType] = useState<'single' | 'double'>('single'); // ✅ NEW: Explicit occupancy selection
   const [numberOfAdults, setNumberOfAdults] = useState(1);
   const [numberOfChildren, setNumberOfChildren] = useState(0);
 
@@ -67,11 +68,29 @@ export function CreateBookingDialog({
   const [availableRoomTypes, setAvailableRoomTypes] = useState<RoomType[]>([]);
   const [selectedRoomTypes, setSelectedRoomTypes] = useState<Array<{ roomTypeId: string; quantity: number }>>([]);
 
-  // ✅ Calculate if East African for currency display
+  // ✅ Popover state for calendars
+  const [checkInOpen, setCheckInOpen] = useState(false);
+  const [checkOutOpen, setCheckOutOpen] = useState(false);
+
+  // Calculate if East African for currency display
   const eastAfricanCountries = ['Kenya', 'Uganda', 'Tanzania', 'Rwanda', 'Burundi', 'South Sudan'];
   const isEastAfrican = eastAfricanCountries.includes(guestCountry);
 
-  // Check availability when dates, adults, OR country changes
+  // ✅ FIXED: Correct guest capacity validation based on selected occupancy type
+  const totalGuests = numberOfAdults + numberOfChildren;
+  
+  // Capacity rules based on SELECTED occupancy type
+  const maxAdults = occupancyType === 'single' ? 1 : 2;
+  const maxChildren = 1; // Always max 1 child (under 5, free)
+
+  // ✅ Auto-adjust adults when occupancy type changes
+  useEffect(() => {
+    if (occupancyType === 'single' && numberOfAdults > 1) {
+      setNumberOfAdults(1);
+    }
+  }, [occupancyType]);
+
+  // Check availability when dates, occupancy type, OR country changes
   useEffect(() => {
     if (checkInDate && checkOutDate) {
       checkAvailability();
@@ -79,16 +98,16 @@ export function CreateBookingDialog({
       setAvailableRoomTypes([]);
       setSelectedRoomTypes([]);
     }
-  }, [checkInDate, checkOutDate, numberOfAdults, guestCountry]); // ✅ Added guestCountry
+  }, [checkInDate, checkOutDate, occupancyType, guestCountry]); // ✅ Added occupancyType
 
   const checkAvailability = async () => {
     if (!checkInDate || !checkOutDate) return;
 
     setIsCheckingAvailability(true);
     try {
-      // ✅ Include numberOfAdults AND guestCountry for correct pricing
+      // ✅ Include occupancyType for correct pricing
       const response = await fetch(
-        `/api/rooms/available?checkIn=${checkInDate.toISOString()}&checkOut=${checkOutDate.toISOString()}&numberOfAdults=${numberOfAdults}&guestCountry=${guestCountry}`
+        `/api/rooms/available?checkIn=${checkInDate.toISOString()}&checkOut=${checkOutDate.toISOString()}&numberOfAdults=${occupancyType === 'single' ? 1 : 2}&guestCountry=${guestCountry}`
       );
 
       if (!response.ok) {
@@ -154,9 +173,13 @@ export function CreateBookingDialog({
         throw new Error('Please select at least one room');
       }
 
-      // ✅ Validate guest count (max 2 per room)
-      if (numberOfAdults + numberOfChildren > 2) {
-        throw new Error('Maximum 2 guests per room allowed');
+      // ✅ Validate guest capacity based on occupancy type
+      if (occupancyType === 'single' && (numberOfAdults > 1 || numberOfChildren > 1)) {
+        throw new Error('Single occupancy: Maximum 1 adult + 1 child (under 5)');
+      }
+      
+      if (occupancyType === 'double' && (numberOfAdults > 2 || numberOfChildren > 1)) {
+        throw new Error('Double occupancy: Maximum 2 adults + 1 child (under 5)');
       }
 
       const token = localStorage.getItem('token');
@@ -171,7 +194,7 @@ export function CreateBookingDialog({
           guestLastName,
           guestEmail,
           guestPhone,
-          guestCountry, // ✅ Include country
+          guestCountry,
           checkInDate: checkInDate.toISOString(),
           checkOutDate: checkOutDate.toISOString(),
           numberOfAdults,
@@ -208,6 +231,7 @@ export function CreateBookingDialog({
     setGuestCountry('Kenya');
     setCheckInDate(undefined);
     setCheckOutDate(undefined);
+    setOccupancyType('single'); // ✅ Reset occupancy type
     setNumberOfAdults(1);
     setNumberOfChildren(0);
     setAvailableRoomTypes([]);
@@ -222,7 +246,6 @@ export function CreateBookingDialog({
     }, 0);
   };
 
-  // ✅ Format currency based on guest region
   const formatCurrency = (amount: number) => {
     if (isEastAfrican) {
       return new Intl.NumberFormat('en-KE', {
@@ -241,10 +264,6 @@ export function CreateBookingDialog({
 
   const numberOfNights =
     availableRoomTypes.length > 0 ? availableRoomTypes[0].nights : 0;
-
-  // ✅ Calculate total guests and validate
-  const totalGuests = numberOfAdults + numberOfChildren;
-  const canAddChildren = totalGuests < 2;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -314,7 +333,6 @@ export function CreateBookingDialog({
                 />
               </div>
             </div>
-            {/* ✅ Country Selector */}
             <div className="space-y-2">
               <Label htmlFor="country">
                 Country <span className="text-red-500">*</span>
@@ -343,12 +361,36 @@ export function CreateBookingDialog({
           {/* Booking Details */}
           <div className="space-y-4">
             <h3 className="font-semibold text-gray-900">Booking Details</h3>
+            
+            {/* ✅ NEW: Occupancy Type Selector */}
+            <div className="space-y-2">
+              <Label htmlFor="occupancyType">
+                Room Occupancy Type <span className="text-red-500">*</span>
+              </Label>
+              <select
+                id="occupancyType"
+                value={occupancyType}
+                onChange={(e) => setOccupancyType(e.target.value as 'single' | 'double')}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              >
+                <option value="single">Single Bed (1 adult + 1 child under 5)</option>
+                <option value="double">Double Bed (2 adults + 1 child under 5)</option>
+              </select>
+              <p className="text-xs text-gray-500">
+                {occupancyType === 'single' 
+                  ? '🛏️ Single occupancy pricing applied' 
+                  : '🛏️🛏️ Double occupancy pricing applied'}
+              </p>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
+              {/* ✅ FIXED: Check-in calendar stays open */}
               <div className="space-y-2">
                 <Label>
                   Check-in Date <span className="text-red-500">*</span>
                 </Label>
-                <Popover>
+                <Popover open={checkInOpen} onOpenChange={setCheckInOpen}>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
@@ -358,22 +400,27 @@ export function CreateBookingDialog({
                       {checkInDate ? format(checkInDate, 'PPP') : 'Select date'}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
+                  <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
                       selected={checkInDate}
-                      onSelect={setCheckInDate}
+                      onSelect={(date) => {
+                        setCheckInDate(date);
+                        setCheckInOpen(false); // ✅ Close after selection
+                      }}
                       disabled={(date) => date < new Date()}
                       initialFocus
                     />
                   </PopoverContent>
                 </Popover>
               </div>
+
+              {/* ✅ FIXED: Check-out calendar stays open */}
               <div className="space-y-2">
                 <Label>
                   Check-out Date <span className="text-red-500">*</span>
                 </Label>
-                <Popover>
+                <Popover open={checkOutOpen} onOpenChange={setCheckOutOpen}>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
@@ -383,11 +430,14 @@ export function CreateBookingDialog({
                       {checkOutDate ? format(checkOutDate, 'PPP') : 'Select date'}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
+                  <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
                       selected={checkOutDate}
-                      onSelect={setCheckOutDate}
+                      onSelect={(date) => {
+                        setCheckOutDate(date);
+                        setCheckOutOpen(false); // ✅ Close after selection
+                      }}
                       disabled={(date) => !checkInDate || date <= checkInDate}
                       initialFocus
                     />
@@ -396,50 +446,108 @@ export function CreateBookingDialog({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="adults">
-                  Number of Adults <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="adults"
-                  type="number"
-                  min="1"
-                  max="2"
-                  value={numberOfAdults}
-                  onChange={(e) => {
-                    const value = parseInt(e.target.value) || 1;
-                    if (value + numberOfChildren <= 2) {
-                      setNumberOfAdults(value);
-                    } else {
-                      toast.error('Maximum 2 guests per room');
-                    }
-                  }}
-                />
-                <p className="text-xs text-gray-500">
-                  {numberOfAdults === 1 ? 'Single occupancy pricing' : 'Double occupancy pricing'}
-                </p>
+            {/* ✅ FIXED: Guest capacity with proper validation */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-semibold">Guests Per Room</Label>
+                <span className="text-xs text-gray-600">
+                  {occupancyType === 'single' 
+                    ? 'Single: Max 1 adult + 1 child (under 5)' 
+                    : 'Double: Max 2 adults + 1 child (under 5)'}
+                </span>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="children">Number of Children</Label>
-                <Input
-                  id="children"
-                  type="number"
-                  min="0"
-                  max={2 - numberOfAdults}
-                  value={numberOfChildren}
-                  onChange={(e) => {
-                    const value = parseInt(e.target.value) || 0;
-                    if (numberOfAdults + value <= 2) {
-                      setNumberOfChildren(value);
-                    } else {
-                      toast.error('Maximum 2 guests per room');
-                    }
-                  }}
-                  disabled={!canAddChildren}
-                />
-                <p className="text-xs text-gray-500">
-                  {totalGuests}/2 guests selected
+
+              <div className="grid grid-cols-2 gap-4">
+                {/* Adults Counter */}
+                <div className="space-y-2">
+                  <Label htmlFor="adults" className="text-sm">
+                    Adults (18+ or children 5+) <span className="text-red-500">*</span>
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (numberOfAdults > 1) {
+                          setNumberOfAdults(numberOfAdults - 1);
+                        }
+                      }}
+                      disabled={numberOfAdults <= 1}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Minus className="w-4 h-4" />
+                    </Button>
+                    <span className="w-12 text-center font-semibold">{numberOfAdults}</span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (numberOfAdults < maxAdults) {
+                          setNumberOfAdults(numberOfAdults + 1);
+                        } else {
+                          toast.error(`Maximum ${maxAdults} adult${maxAdults > 1 ? 's' : ''} for ${occupancyType} occupancy`);
+                        }
+                      }}
+                      disabled={numberOfAdults >= maxAdults}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    Max {maxAdults} adult{maxAdults > 1 ? 's' : ''}
+                  </p>
+                </div>
+
+                {/* ✅ FIXED: Children Counter */}
+                <div className="space-y-2">
+                  <Label htmlFor="children" className="text-sm">
+                    Children (0-4 years, free)
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (numberOfChildren > 0) {
+                          setNumberOfChildren(numberOfChildren - 1);
+                        }
+                      }}
+                      disabled={numberOfChildren <= 0}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Minus className="w-4 h-4" />
+                    </Button>
+                    <span className="w-12 text-center font-semibold">{numberOfChildren}</span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (numberOfChildren < maxChildren) {
+                          setNumberOfChildren(numberOfChildren + 1);
+                        } else {
+                          toast.error('Maximum 1 child (under 5) per room');
+                        }
+                      }}
+                      disabled={numberOfChildren >= maxChildren}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  <p className="text-xs text-gray-500">Max {maxChildren} child</p>
+                </div>
+              </div>
+
+              {/* Guest Summary */}
+              <div className="pt-2 border-t border-blue-200">
+                <p className="text-sm text-gray-700">
+                  <strong>Total per room:</strong> {numberOfAdults} adult{numberOfAdults > 1 ? 's' : ''}
+                  {numberOfChildren > 0 && ` + ${numberOfChildren} child (free, under 5)`}
                 </p>
               </div>
             </div>
@@ -527,7 +635,7 @@ export function CreateBookingDialog({
                                 <p className="text-lg font-semibold text-blue-600 mt-2">
                                   {formatCurrency(roomType.pricePerNight)} / night
                                   <span className="text-xs font-normal text-gray-500 ml-2">
-                                    ({numberOfAdults === 1 ? 'single' : 'double'} occupancy)
+                                    ({occupancyType} occupancy)
                                   </span>
                                 </p>
                               </div>
